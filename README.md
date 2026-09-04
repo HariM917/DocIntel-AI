@@ -366,6 +366,11 @@ docker-compose up --build
 
 ---
 
+##Contributors
+
+-*HARI
+
+---
 ## 📄 License & GitHub Repository
 
 - **Repository:** [https://github.com/HariM917/DocIntel-AI](https://github.com/HariM917/DocIntel-AI)
