@@ -368,7 +368,7 @@ docker-compose up --build
 
 ##Contributors
 
--*HARI
+**HARI**
 
 ---
 ## 📄 License & GitHub Repository
