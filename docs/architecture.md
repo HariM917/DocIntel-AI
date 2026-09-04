@@ -9,26 +9,26 @@
 
 ```mermaid
 graph TD
-    A[Client Browser: React + Vite + Tailwind] -->|REST API + JWT| B[FastAPI Gateway :8000]
+    A["Client Browser: React + Vite + Tailwind"] -->|"REST API + JWT"| B["FastAPI Gateway :8000"]
     
     subgraph "Ingestion & Intelligence Pipeline"
-        B --> C[File Validation & Staging]
-        C --> D[OCR Engine: PyMuPDF / Tesseract]
-        D --> E[Multi-Signal Classifier]
-        E --> F[RoBERTa NER Token Classifier]
-        F --> G[PII Detection: Deterministic Regex + Luhn/Verhoeff]
-        G --> H[Redaction Engine: Masking Policies]
-        H --> I[Structured Schema Synthesizer]
+        B --> C["File Validation & Staging"]
+        C --> D["OCR Engine: PyMuPDF / Tesseract"]
+        D --> E["Multi-Signal Classifier"]
+        E --> F["RoBERTa NER Token Classifier"]
+        F --> G["PII Detection: Deterministic Regex + Luhn/Verhoeff"]
+        G --> H["Redaction Engine: Masking Policies"]
+        H --> I["Structured Schema Synthesizer"]
     end
     
     subgraph "Storage & Retrieval Tier"
-        I --> J[(MongoDB / Resilient Store)]
-        I --> K[SentenceTransformer MiniLM-L6-v2]
-        K --> L[(FAISS Dense Vector Index)]
+        I --> J[("MongoDB / Resilient Store")]
+        I --> K["SentenceTransformer MiniLM-L6-v2"]
+        K --> L[("FAISS Dense Vector Index")]
     end
     
     subgraph "Conversational Intelligence"
-        B --> M[RAG Synthesizer & Grounded Context Engine]
+        B --> M["RAG Synthesizer & Grounded Context Engine"]
         M <--> L
     end
 ```

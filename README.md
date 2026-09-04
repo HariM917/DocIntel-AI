@@ -47,35 +47,35 @@ Manual document processing introduces severe operational pain points:
 ```mermaid
 flowchart TD
     subgraph Client["Frontend (React 18 + Vite + Tailwind)"]
-        UI1[Process Document Upload]
-        UI2[Dashboard Telemetry]
-        UI3[Document Archive & Filters]
-        UI4[Security Rule Engine]
-        UI5[FAISS RAG Assistant]
+        UI1["Process Document Upload"]
+        UI2["Dashboard Telemetry"]
+        UI3["Document Archive & Filters"]
+        UI4["Security Rule Engine"]
+        UI5["FAISS RAG Assistant"]
     end
 
     subgraph Gateway["API Gateway (FastAPI)"]
-        AUTH[JWT Authentication & Route Guards]
-        EP1[/api/documents/process]
-        EP2[/api/dashboard/stats]
-        EP3[/api/security/rules]
-        EP4[/api/chat]
+        AUTH["JWT Authentication & Route Guards"]
+        EP1["/api/documents/process"]
+        EP2["/api/dashboard/stats"]
+        EP3["/api/security/rules"]
+        EP4["/api/chat"]
     end
 
     subgraph Pipeline["8-Stage Intelligence Pipeline"]
-        S1[1. Upload & Staging]
-        S2[2. PyMuPDF + Tesseract OCR]
-        S3[3. Multi-Signal Classifier]
-        S4[4. RoBERTa Named Entity Recognition]
-        S5[5. Deterministic PII & Checksum Validation]
-        S6[6. Redaction Policy Engine]
-        S7[7. Typed Schema Synthesizer]
-        S8[8. FAISS Vector Indexer]
+        S1["1. Upload & Staging"]
+        S2["2. PyMuPDF + Tesseract OCR"]
+        S3["3. Multi-Signal Classifier"]
+        S4["4. RoBERTa Named Entity Recognition"]
+        S5["5. Deterministic PII & Checksum Validation"]
+        S6["6. Redaction Policy Engine"]
+        S7["7. Typed Schema Synthesizer"]
+        S8["8. FAISS Vector Indexer"]
     end
 
     subgraph Storage["Persistence Tier"]
-        DB[(MongoDB 7.0 / Resilient JSON Store)]
-        VEC[(FAISS Dense Vector Index)]
+        DB[("MongoDB 7.0 / Resilient JSON Store")]
+        VEC[("FAISS Dense Vector Index")]
     end
 
     UI1 --> EP1
