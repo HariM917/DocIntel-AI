@@ -1,0 +1,2021 @@
+{
+  "users": [
+    {
+      "email": "admin@docintel.ai",
+      "full_name": "DocIntel Administrator",
+      "password_hash": "$2b$12$tg7eqIcpmZMwYHAbyUv.Su.f8t0LTRrsI2GIO1ENIE/Y.CqR0ghsq",
+      "role": "admin",
+      "created_at": "2025-01-01T00:00:00",
+      "updated_at": "2025-01-01T00:00:00",
+      "_id": "users_1_1788412250"
+    },
+    {
+      "email": "test_user_1788540983@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$GYR8y7Crawg7r2oKkLHjkOz/EtfjAxcMaR8ZmjGHXytkdvpbw8RBq",
+      "role": "user",
+      "created_at": "2026-09-04T16:56:23.929709",
+      "updated_at": "2026-09-04T16:56:23.929709",
+      "_id": "users_2_1788521184"
+    },
+    {
+      "email": "test_user_1788541520@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$CjAT3KRZCu6/jTj9WfuFx.Hm22rUM9xs4Wk3rD3SyloSkadcDFhIi",
+      "role": "user",
+      "created_at": "2026-09-04T17:05:20.847943",
+      "updated_at": "2026-09-04T17:05:20.847943",
+      "_id": "users_3_1788521722"
+    }
+  ],
+  "security_rules": [
+    {
+      "rule_id": "rule_aadhaar",
+      "name": "Aadhaar Masking",
+      "entity_type": "AADHAAR",
+      "enabled": true,
+      "description": "Masks 12-digit Indian Aadhaar numbers to show only the last 4 digits (e.g. XXXX XXXX 9012).",
+      "mask_pattern": "XXXX XXXX {last4}",
+      "created_at": "2025-01-01T00:00:00",
+      "updated_at": "2026-09-04T17:05:32.441718",
+      "_id": "security_rules_1_1788412250"
+    },
+    {
+      "rule_id": "rule_pan",
+      "name": "PAN Masking",
+      "entity_type": "PAN",
+      "enabled": true,
+      "description": "Masks 10-character Indian Permanent Account Numbers (e.g. XXXXX1234F).",
+      "mask_pattern": "XXXXX{last5}",
+      "created_at": "2025-01-01T00:00:00",
+      "updated_at": "2025-01-01T00:00:00",
+      "_id": "security_rules_2_1788412250"
+    },
+    {
+      "rule_id": "rule_email",
+      "name": "Email Masking",
+      "entity_type": "EMAIL",
+      "enabled": true,
+      "description": "Masks personal and corporate email addresses (e.g. r***@example.com).",
+      "mask_pattern": "{first}***@{domain}",
+      "created_at": "2025-01-01T00:00:00",
+      "updated_at": "2025-01-01T00:00:00",
+      "_id": "security_rules_3_1788412250"
+    },
+    {
+      "rule_id": "rule_phone",
+      "name": "Phone Masking",
+      "entity_type": "PHONE",
+      "enabled": true,
+      "description": "Masks primary digits of mobile and telephone numbers (e.g. ******3210).",
+      "mask_pattern": "******{last4}",
+      "created_at": "2025-01-01T00:00:00",
+      "updated_at": "2025-01-01T00:00:00",
+      "_id": "security_rules_4_1788412250"
+    },
+    {
+      "rule_id": "rule_bank_account",
+      "name": "Bank Account Masking",
+      "entity_type": "BANK_ACCOUNT",
+      "enabled": true,
+      "description": "Masks account numbers in bank statements and payment records.",
+      "mask_pattern": "********{last4}",
+      "created_at": "2025-01-01T00:00:00",
+      "updated_at": "2025-01-01T00:00:00",
+      "_id": "security_rules_5_1788412250"
+    },
+    {
+      "rule_id": "rule_credit_card",
+      "name": "Credit Card Masking",
+      "entity_type": "CREDIT_CARD",
+      "enabled": true,
+      "description": "PCI-DSS compliant masking of credit and debit card numbers (XXXX-XXXX-XXXX-1234).",
+      "mask_pattern": "XXXX-XXXX-XXXX-{last4}",
+      "created_at": "2025-01-01T00:00:00",
+      "updated_at": "2025-01-01T00:00:00",
+      "_id": "security_rules_6_1788412250"
+    }
+  ],
+  "documents": [
+    {
+      "document_id": "DOC-93EF2B",
+      "filename": "sample_invoice.pdf",
+      "file_type": ".pdf",
+      "file_size": 5763572,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-93EF2B_sample_invoice.pdf",
+      "document_type": "Invoice",
+      "classification_confidence": 0.7,
+      "status": "Verified",
+      "raw_text": "af ble CLOUD SOLUTIONS Py TLTD\n\nDiab agette U0 [pita tity trgp ete tee\n\nTAGS TAGS E\n\nInveind Aor IW W2025-80 14\n\nInveice Date: 16/01/7075\n\nQue Date: 30/01 fo 25\n\nltam Description\n\nCloud Dedicated Cluster Hesting (Standard Tier\n\nKube rnetes Production Gperations & Maintenance\n\nAutomated Secure Backups & Disaster Recovery\n\n2477 Enterprise 3LA Support Package\n\nPAYMENT IAS TRUC TIONS & REMITTANCE DETAILS:\n\nBank: State Bank of India | Branch: Koramangala, Barigalore\nAccount Number 8182736460182 | IFSC: SBINDDO 123.4\n\nAuthorized Signatonr Vikram Malhotra | PAN: ASBOATSS.4F\n\nBILLED Te (6 USTOMER):\n\nApex Global Logistics Ime\n\nContact rhulverma ga pexlogisticaooam\n\nPhone: +91 981122353544 | PAN: ABC DET234F\n\nUnit Prics\nINR 66,000.00\nINR 30,000.00\nINR 16,000.00\nINDRA 10,000.00\n\nSubtotal\n\nGST fis:\n\nGrand Total Amount\n\nTeta | Amaunt\n\nINR 66,000.00\n\nINR 30,000.00\n\nINR 16,000.00\n\nINR 10,000.00\n\nINA 120,000.00\n\nIN 21,600.00\n\nINR 147.600.00",
+      "redacted_text": "af ble CLOUD SOLUTIONS Py TLTD\n\nDiab agette U0 [pita tity trgp ete tee\n\nTAGS TAGS E\n\nInveind Aor IW W2025-80 14\n\nInveice Date: 16/01/7075\n\nQue Date: 30/01 fo 25\n\nltam Description\n\nCloud Dedicated Cluster Hesting (Standard Tier\n\nKube rnetes Production Gperations & Maintenance\n\nAutomated Secure Backups & Disaster Recovery\n\n2477 Enterprise 3LA Support Package\n\nPAYMENT IAS TRUC TIONS & REMITTANCE DETAILS:\n\nBank: State Bank of India | Branch: Koramangala, Barigalore\nAccount Number *********0182 | IFSC: SBINDDO 123.4\n\nAuthorized Signatonr V***** M******* | PAN: ASBOATSS.4F\n\nBILLED Te (6 USTOMER):\n\nApex Global Logistics Ime\n\nContact rhulverma ga pexlogisticaooam\n\nPhone: +91 XXXX XXXX 3544 | PAN: ABC DET234F\n\nUnit Prics\nINR 66,000.00\nINR 30,000.00\nINR 16,000.00\nINDRA 10,000.00\n\nSubtotal\n\nGST fis:\n\nGrand Total Amount\n\nTeta | Amaunt\n\nINR 66,000.00\n\nINR 30,000.00\n\nINR 16,000.00\n\nINR 10,000.00\n\nINA 120,000.00\n\nIN 21,600.00\n\nINR 147.600.00",
+      "entities": [
+        {
+          "text": "Vikram Malhotra",
+          "type": "PERSON",
+          "confidence": 0.9993,
+          "start": 539,
+          "end": 554
+        },
+        {
+          "text": "State Bank of India",
+          "type": "ORGANIZATION",
+          "confidence": 0.9991,
+          "start": 412,
+          "end": 431
+        },
+        {
+          "text": "Barigalore",
+          "type": "LOCATION",
+          "confidence": 0.9968,
+          "start": 455,
+          "end": 465
+        },
+        {
+          "text": "Koramangala",
+          "type": "LOCATION",
+          "confidence": 0.9958,
+          "start": 442,
+          "end": 453
+        },
+        {
+          "text": "Apex Global Logistics Ime",
+          "type": "ORGANIZATION",
+          "confidence": 0.9725,
+          "start": 598,
+          "end": 625
+        },
+        {
+          "text": "rhulverma ga pexlogisticaooam",
+          "type": "ORGANIZATION",
+          "confidence": 0.9193,
+          "start": 634,
+          "end": 664
+        },
+        {
+          "text": "INR",
+          "type": "MISCELLANEOUS",
+          "confidence": 0.9102,
+          "start": 834,
+          "end": 837
+        },
+        {
+          "text": "Inveind Aor",
+          "type": "ORGANIZATION",
+          "confidence": 0.7621,
+          "start": 84,
+          "end": 96
+        },
+        {
+          "text": "Diab ag",
+          "type": "ORGANIZATION",
+          "confidence": 0.6573,
+          "start": 32,
+          "end": 39
+        },
+        {
+          "text": "SBINDDO",
+          "type": "ORGANIZATION",
+          "confidence": 0.6004,
+          "start": 503,
+          "end": 510
+        },
+        {
+          "text": "Kube",
+          "type": "MISCELLANEOUS",
+          "confidence": 0.5845,
+          "start": 228,
+          "end": 232
+        }
+      ],
+      "pii_entities": [
+        {
+          "type": "ORGANIZATION",
+          "value": "Diab ag",
+          "confidence": 0.6573,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 32,
+          "end": 39,
+          "masked_value": "Diab ag"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "Inveind Aor",
+          "confidence": 0.7621,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 84,
+          "end": 96,
+          "masked_value": "Inveind Aor"
+        },
+        {
+          "type": "INVOICE_NUMBER",
+          "value": "eind",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": false,
+          "valid": true,
+          "start": 85,
+          "end": 92,
+          "masked_value": "eind"
+        },
+        {
+          "type": "INVOICE_NUMBER",
+          "value": "eice",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": false,
+          "valid": true,
+          "start": 113,
+          "end": 120,
+          "masked_value": "eice"
+        },
+        {
+          "type": "DATE",
+          "value": "16/01/7075",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": false,
+          "valid": true,
+          "start": 127,
+          "end": 137,
+          "masked_value": "16/01/7075"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "State Bank of India",
+          "confidence": 0.9991,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 412,
+          "end": 431,
+          "masked_value": "State Bank of India"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Koramangala",
+          "confidence": 0.9958,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 442,
+          "end": 453,
+          "masked_value": "Koramangala"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Barigalore",
+          "confidence": 0.9968,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 455,
+          "end": 465,
+          "masked_value": "Barigalore"
+        },
+        {
+          "type": "BANK_ACCOUNT",
+          "value": "8182736460182",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": true,
+          "valid": true,
+          "start": 466,
+          "end": 494,
+          "masked_value": "*********0182"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "SBINDDO",
+          "confidence": 0.6004,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 503,
+          "end": 510,
+          "masked_value": "SBINDDO"
+        },
+        {
+          "type": "PERSON",
+          "value": "Vikram Malhotra",
+          "confidence": 0.9993,
+          "source": "roberta",
+          "sensitive": true,
+          "valid": true,
+          "start": 539,
+          "end": 554,
+          "masked_value": "V***** M*******"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "Apex Global Logistics Ime",
+          "confidence": 0.9725,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 598,
+          "end": 625,
+          "masked_value": "Apex Global Logistics Ime"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "rhulverma ga pexlogisticaooam",
+          "confidence": 0.9193,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 634,
+          "end": 664,
+          "masked_value": "rhulverma ga pexlogisticaooam"
+        },
+        {
+          "type": "AADHAAR",
+          "value": "981122353544",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": true,
+          "valid": true,
+          "start": 676,
+          "end": 688,
+          "masked_value": "XXXX XXXX 3544"
+        }
+      ],
+      "structured_data": {
+        "invoice_number": "eind",
+        "invoice_date": "16/01/7075",
+        "due_date": "N/A",
+        "vendor_name": "State Bank of India",
+        "customer_name": "Apex Global Logistics Ime",
+        "subtotal": "N/A",
+        "tax": "N/A",
+        "total_amount": "N/A",
+        "currency": "INR"
+      },
+      "confidence": 0.7073,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 9.6,
+          "details": "Stored 5763572 bytes as DOC-93EF2B_sample_invoice.pdf"
+        },
+        {
+          "name": "OCR",
+          "status": "completed",
+          "duration_ms": 8237.8,
+          "details": "Extracted 938 characters across 1 page(s) (conf: 0.57)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 8.8,
+          "details": "Classified as 'Invoice' with confidence 0.70"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 65781.9,
+          "details": "Identified 11 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 7.0,
+          "details": "Detected 14 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.2,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 5.8,
+          "details": "Synthesized typed Invoice schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 7009.8,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "admin@docintel.ai",
+      "created_at": "2026-09-03T10:42:04.682272",
+      "updated_at": "2026-09-03T10:42:04.682272",
+      "_id": "documents_1_1788412324"
+    },
+    {
+      "document_id": "DOC-EED8C6",
+      "filename": "sample_contract.pdf",
+      "file_type": ".pdf",
+      "file_size": 5763572,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-EED8C6_sample_contract.pdf",
+      "document_type": "Contract",
+      "classification_confidence": 0.89,
+      "status": "Verified",
+      "raw_text": "hMasTER SERIES & NOR DISCLOSURE 4a REERIENT\n\n1. PARTIES TG THIS AGREEMENT\n\nThis Master Services Agree ment (Agreement igentered inte byand between:\nParty 1: Vertes: Global Tech nolegies LLC, having registered offices at Silicon Casig Mumbai.\nParty 2: Horizon Finaneial Services Ltd, having registered offices at Connaught Place, New Delhi.\n\nRepresented by authorized signatory: Rajesh Singhania (Email rajesh. st horizonfin.com, Phone: +81 88 2733-44561.\n\n2. CONFIDENTIALITY & DATA PROTEC TION\n\nBoth parties agree thatall customer data, source code, and financial records shared under this contract\nshall be treated as Confidential Information under the Information Technology Actand applicable data protection regulations\n\nNeither party shall disclose customer Pll including PAN cards Aadhaar identity decuments or bank details toany third party.\n\n4. TERM & TERMI ALA TOR\n\nThe effective date of thisagree ment is0 1/02/2025. The initial term shall be 24 months with an expiry date of 3101/2027.\n\nEither party may terminate thisagreementwith 60 days written notice.\n\n4. GOVERN IAG LAW & ARBITRATION\n\nThis Agree mentshall be governed by and construed in accordance with the lawsof India.\n\nAny dispute shall be referred toarbitration in Mumbai, Maharashtra.\n\nIM) WITNESS WHEREOF, the parties hereto have executed this Agree mentasof the date first written above.\n\nSigned for Vertex Global Signed for Herizen Fin:",
+      "redacted_text": "hMasTER SERIES & NOR DISCLOSURE 4a REERIENT\n\n1. PARTIES TG THIS AGREEMENT\n\nThis Master Services Agree ment (Agreement igentered inte byand between:\nParty 1: Vertes: Global Tech nolegies LLC, having registered offices at Silicon Casig Mumbai.\nParty 2: Horizon Finaneial Services Ltd, having registered offices at Connaught Place, New Delhi.\n\nRepresented by authorized signatory: R***** S******** (Email r*****. st horizonfin.com, Phone: +81 88 2733-44561.\n\n2. CONFIDENTIALITY & DATA PROTEC TION\n\nBoth parties agree thatall customer data, source code, and financial records shared under this contract\nshall be treated as Confidential Information under the Information Technology Actand applicable data protection regulations\n\nNeither party shall disclose customer Pll including PAN cards Aadhaar identity decuments or bank details toany third party.\n\n4. TERM & TERMI ALA TOR\n\nThe effective date of thisagree ment is0 1/02/2025. The initial term shall be 24 months with an expiry date of 3101/2027.\n\nEither party may terminate thisagreementwith 60 days written notice.\n\n4. GOVERN IAG LAW & ARBITRATION\n\nThis Agree mentshall be governed by and construed in accordance with the lawsof India.\n\nAny dispute shall be referred toarbitration in Mumbai, Maharashtra.\n\nIM) WITNESS WHEREOF, the parties hereto have executed this Agree mentasof the date first written above.\n\nSigned for Vertex Global Signed for Herizen Fin:",
+      "entities": [
+        {
+          "text": "Maharashtra",
+          "type": "LOCATION",
+          "confidence": 0.9995,
+          "start": 1243,
+          "end": 1254
+        },
+        {
+          "text": "India",
+          "type": "LOCATION",
+          "confidence": 0.9991,
+          "start": 1180,
+          "end": 1185
+        },
+        {
+          "text": "Horizon Finaneial Services Ltd",
+          "type": "ORGANIZATION",
+          "confidence": 0.999,
+          "start": 251,
+          "end": 281
+        },
+        {
+          "text": "Vertex Global",
+          "type": "ORGANIZATION",
+          "confidence": 0.999,
+          "start": 1373,
+          "end": 1386
+        },
+        {
+          "text": "New Delhi",
+          "type": "LOCATION",
+          "confidence": 0.9983,
+          "start": 329,
+          "end": 338
+        },
+        {
+          "text": "Rajesh Singhania",
+          "type": "PERSON",
+          "confidence": 0.998,
+          "start": 378,
+          "end": 394
+        },
+        {
+          "text": "Mumbai",
+          "type": "LOCATION",
+          "confidence": 0.998,
+          "start": 1235,
+          "end": 1241
+        },
+        {
+          "text": "Information Technology Act",
+          "type": "MISCELLANEOUS",
+          "confidence": 0.9979,
+          "start": 654,
+          "end": 680
+        },
+        {
+          "text": "Herizen Fin",
+          "type": "ORGANIZATION",
+          "confidence": 0.9969,
+          "start": 1398,
+          "end": 1409
+        },
+        {
+          "text": "Vertes: Global Tech nolegies LLC",
+          "type": "ORGANIZATION",
+          "confidence": 0.9967,
+          "start": 157,
+          "end": 189
+        },
+        {
+          "text": "Connaught Place",
+          "type": "LOCATION",
+          "confidence": 0.996,
+          "start": 312,
+          "end": 327
+        },
+        {
+          "text": "Silicon Casig Mumbai",
+          "type": "LOCATION",
+          "confidence": 0.9958,
+          "start": 220,
+          "end": 240
+        },
+        {
+          "text": "Aadhaar",
+          "type": "MISCELLANEOUS",
+          "confidence": 0.9576,
+          "start": 786,
+          "end": 793
+        },
+        {
+          "text": "rajesh",
+          "type": "PERSON",
+          "confidence": 0.9345,
+          "start": 402,
+          "end": 408
+        },
+        {
+          "text": "horizonfin",
+          "type": "ORGANIZATION",
+          "confidence": 0.8122,
+          "start": 413,
+          "end": 423
+        },
+        {
+          "text": "PAN",
+          "type": "MISCELLANEOUS",
+          "confidence": 0.7322,
+          "start": 776,
+          "end": 779
+        }
+      ],
+      "pii_entities": [
+        {
+          "type": "ORGANIZATION",
+          "value": "Vertes: Global Tech nolegies LLC",
+          "confidence": 0.9967,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 157,
+          "end": 189,
+          "masked_value": "Vertes: Global Tech nolegies LLC"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Silicon Casig Mumbai",
+          "confidence": 0.9958,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 220,
+          "end": 240,
+          "masked_value": "Silicon Casig Mumbai"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "Horizon Finaneial Services Ltd",
+          "confidence": 0.999,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 251,
+          "end": 281,
+          "masked_value": "Horizon Finaneial Services Ltd"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Connaught Place",
+          "confidence": 0.996,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 312,
+          "end": 327,
+          "masked_value": "Connaught Place"
+        },
+        {
+          "type": "LOCATION",
+          "value": "New Delhi",
+          "confidence": 0.9983,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 329,
+          "end": 338,
+          "masked_value": "New Delhi"
+        },
+        {
+          "type": "PERSON",
+          "value": "Rajesh Singhania",
+          "confidence": 0.998,
+          "source": "roberta",
+          "sensitive": true,
+          "valid": true,
+          "start": 378,
+          "end": 394,
+          "masked_value": "R***** S********"
+        },
+        {
+          "type": "PERSON",
+          "value": "rajesh",
+          "confidence": 0.9345,
+          "source": "roberta",
+          "sensitive": true,
+          "valid": true,
+          "start": 402,
+          "end": 408,
+          "masked_value": "r*****"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "horizonfin",
+          "confidence": 0.8122,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 413,
+          "end": 423,
+          "masked_value": "horizonfin"
+        },
+        {
+          "type": "DATE",
+          "value": "1/02/2025",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": false,
+          "valid": true,
+          "start": 915,
+          "end": 924,
+          "masked_value": "1/02/2025"
+        },
+        {
+          "type": "LOCATION",
+          "value": "India",
+          "confidence": 0.9991,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 1180,
+          "end": 1185,
+          "masked_value": "India"
+        },
+        {
+          "type": "INVOICE_NUMBER",
+          "value": "erred",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": false,
+          "valid": true,
+          "start": 1209,
+          "end": 1217,
+          "masked_value": "erred"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Mumbai",
+          "confidence": 0.998,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 1235,
+          "end": 1241,
+          "masked_value": "Mumbai"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Maharashtra",
+          "confidence": 0.9995,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 1243,
+          "end": 1254,
+          "masked_value": "Maharashtra"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "Vertex Global",
+          "confidence": 0.999,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 1373,
+          "end": 1386,
+          "masked_value": "Vertex Global"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "Herizen Fin",
+          "confidence": 0.9969,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 1398,
+          "end": 1409,
+          "masked_value": "Herizen Fin"
+        }
+      ],
+      "structured_data": {
+        "contract_number": "N/A",
+        "parties": [
+          "Horizon Finaneial Services Ltd",
+          "Vertex Global",
+          "Rajesh Singhania",
+          "Herizen Fin"
+        ],
+        "effective_date": "1/02/2025",
+        "expiry_date": "N/A",
+        "governing_law": "and construed in accordance with the lawsof India"
+      },
+      "confidence": 0.8654,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 9.4,
+          "details": "Stored 5763572 bytes as DOC-EED8C6_sample_contract.pdf"
+        },
+        {
+          "name": "OCR",
+          "status": "completed",
+          "duration_ms": 7273.5,
+          "details": "Extracted 1410 characters across 1 page(s) (conf: 0.74)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 4.9,
+          "details": "Classified as 'Contract' with confidence 0.89"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 431.1,
+          "details": "Identified 16 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 2.4,
+          "details": "Detected 15 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.4,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 8.5,
+          "details": "Synthesized typed Contract schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 24.4,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "admin@docintel.ai",
+      "created_at": "2026-09-03T10:42:19.432259",
+      "updated_at": "2026-09-03T10:42:19.432259",
+      "_id": "documents_2_1788412339"
+    },
+    {
+      "document_id": "DOC-5F57F0",
+      "filename": "sample_identity.pdf",
+      "file_type": ".pdf",
+      "file_size": 5763572,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-5F57F0_sample_identity.pdf",
+      "document_type": "Identity",
+      "classification_confidence": 0.95,
+      "status": "Verified",
+      "raw_text": "GOVERNMENT OF INDla? REPUBLIQUE DE LINDE\n\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA \u2019aDHAAR\n\nName: Rahul Sharma\nCate of Birth: 14/08/1988\nGender Male\n\n[ FHT ]\n\nAddress Flat402 Green Valley Apartments Indiranagar, Bangalore 580033\n\nPhone: 8876549210 | Email rahulsharma@example.com\n\n2647 81e2 4301\n\nINGORE TAX DEPSATRIENT -GOYT. OF INDI\n\nPERRIANENT 40 COUNT AHURIBER (PAR C4RDo\n\nMame: RAHUL SHARMA\n\nFather's Wame: SURESH SHARMA\n\nDate of Birth: 14/05/1888\n\nABC OE) 234F",
+      "redacted_text": "GOVERNMENT OF INDla? REPUBLIQUE DE LINDE\n\nUNIQUE IDENTIFICATION AUTHORITY OF INDIA \u2019aDHAAR\n\nName: R**** S*****\nCate of Birth: 14/08/1988\nGender Male\n\n[ FHT ]\n\nAddress Flat402 Green Valley Apartments Indiranagar, Bangalore 580033\n\nPhone: ******9210 | Email r***a@example.com\n\n2647 81e2 4301\n\nINGORE TAX DEPSATRIENT -GOYT. OF INDI\n\nPERRIANENT 40 COUNT AHURIBER (PAR C4RDo\n\nMame: RAHUL SHARMA\n\nFather's Wame: S***** S*****\n\nDate of Birth: 14/05/1888\n\nABC OE) 234F",
+      "entities": [
+        {
+          "text": "Rahul Sharma",
+          "type": "PERSON",
+          "confidence": 0.9996,
+          "start": 98,
+          "end": 110
+        },
+        {
+          "text": "SURESH SHARMA",
+          "type": "PERSON",
+          "confidence": 0.9988,
+          "start": 412,
+          "end": 426
+        },
+        {
+          "text": "Bangalore",
+          "type": "LOCATION",
+          "confidence": 0.9951,
+          "start": 212,
+          "end": 221
+        },
+        {
+          "text": "rahulsharma",
+          "type": "PERSON",
+          "confidence": 0.9928,
+          "start": 256,
+          "end": 267
+        },
+        {
+          "text": "Green Valley Apartments Indiranagar",
+          "type": "LOCATION",
+          "confidence": 0.9812,
+          "start": 175,
+          "end": 210
+        },
+        {
+          "text": "AUTHORITY OF INDIA",
+          "type": "ORGANIZATION",
+          "confidence": 0.9761,
+          "start": 64,
+          "end": 82
+        },
+        {
+          "text": "GOYT",
+          "type": "ORGANIZATION",
+          "confidence": 0.9179,
+          "start": 321,
+          "end": 325
+        },
+        {
+          "text": "AHURIBER",
+          "type": "LOCATION",
+          "confidence": 0.9083,
+          "start": 356,
+          "end": 364
+        },
+        {
+          "text": "\ufffdaDHAAR",
+          "type": "ORGANIZATION",
+          "confidence": 0.9055,
+          "start": 83,
+          "end": 91
+        },
+        {
+          "text": "OF INDI",
+          "type": "ORGANIZATION",
+          "confidence": 0.8987,
+          "start": 327,
+          "end": 336
+        },
+        {
+          "text": "REPUBLIQUE DE LINDE\n\nUNIQ",
+          "type": "ORGANIZATION",
+          "confidence": 0.876,
+          "start": 21,
+          "end": 46
+        },
+        {
+          "text": "INGORE",
+          "type": "ORGANIZATION",
+          "confidence": 0.7243,
+          "start": 297,
+          "end": 303
+        },
+        {
+          "text": "ENT",
+          "type": "ORGANIZATION",
+          "confidence": 0.6629,
+          "start": 343,
+          "end": 346
+        },
+        {
+          "text": "OF INDla",
+          "type": "ORGANIZATION",
+          "confidence": 0.5104,
+          "start": 11,
+          "end": 19
+        }
+      ],
+      "pii_entities": [
+        {
+          "type": "ORGANIZATION",
+          "value": "OF INDla",
+          "confidence": 0.5104,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 11,
+          "end": 19,
+          "masked_value": "OF INDla"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "REPUBLIQUE DE LINDE\n\nUNIQ",
+          "confidence": 0.876,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 21,
+          "end": 46,
+          "masked_value": "REPUBLIQUE DE LINDE\n\nUNIQ"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "AUTHORITY OF INDIA",
+          "confidence": 0.9761,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 64,
+          "end": 82,
+          "masked_value": "AUTHORITY OF INDIA"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "\ufffdaDHAAR",
+          "confidence": 0.9055,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 83,
+          "end": 91,
+          "masked_value": "\ufffdaDHAAR"
+        },
+        {
+          "type": "PERSON",
+          "value": "Rahul Sharma",
+          "confidence": 0.9996,
+          "source": "roberta",
+          "sensitive": true,
+          "valid": true,
+          "start": 98,
+          "end": 110,
+          "masked_value": "R**** S*****"
+        },
+        {
+          "type": "DATE",
+          "value": "14/08/1988",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": false,
+          "valid": true,
+          "start": 126,
+          "end": 136,
+          "masked_value": "14/08/1988"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Green Valley Apartments Indiranagar",
+          "confidence": 0.9812,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 175,
+          "end": 210,
+          "masked_value": "Green Valley Apartments Indiranagar"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Bangalore",
+          "confidence": 0.9951,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 212,
+          "end": 221,
+          "masked_value": "Bangalore"
+        },
+        {
+          "type": "PHONE",
+          "value": "8876549210",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": true,
+          "valid": true,
+          "start": 237,
+          "end": 247,
+          "masked_value": "******9210"
+        },
+        {
+          "type": "EMAIL",
+          "value": "rahulsharma@example.com",
+          "confidence": 0.99,
+          "source": "regex",
+          "sensitive": true,
+          "valid": true,
+          "start": 256,
+          "end": 279,
+          "masked_value": "r***a@example.com"
+        },
+        {
+          "type": "PERSON",
+          "value": "rahulsharma",
+          "confidence": 0.9928,
+          "source": "roberta",
+          "sensitive": true,
+          "valid": true,
+          "start": 256,
+          "end": 267,
+          "masked_value": "r**********"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "INGORE",
+          "confidence": 0.7243,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 297,
+          "end": 303,
+          "masked_value": "INGORE"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "GOYT",
+          "confidence": 0.9179,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 321,
+          "end": 325,
+          "masked_value": "GOYT"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "OF INDI",
+          "confidence": 0.8987,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 327,
+          "end": 336,
+          "masked_value": "OF INDI"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "ENT",
+          "confidence": 0.6629,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 343,
+          "end": 346,
+          "masked_value": "ENT"
+        },
+        {
+          "type": "LOCATION",
+          "value": "AHURIBER",
+          "confidence": 0.9083,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 356,
+          "end": 364,
+          "masked_value": "AHURIBER"
+        },
+        {
+          "type": "PERSON",
+          "value": "SURESH SHARMA",
+          "confidence": 0.9988,
+          "source": "roberta",
+          "sensitive": true,
+          "valid": true,
+          "start": 412,
+          "end": 426,
+          "masked_value": "S***** S*****"
+        },
+        {
+          "type": "DATE",
+          "value": "14/05/1888",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": false,
+          "valid": true,
+          "start": 442,
+          "end": 452,
+          "masked_value": "14/05/1888"
+        }
+      ],
+      "structured_data": {
+        "name": "Rahul Sharma\nCate of Birth",
+        "document_type": "Identity",
+        "document_number": "N/A",
+        "date_of_birth": "14/05/1888",
+        "gender": "Male",
+        "address": "Flat402 Green Valley Apartments Indiranagar, Bangalore 580033"
+      },
+      "confidence": 0.8221,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 7.7,
+          "details": "Stored 5763572 bytes as DOC-5F57F0_sample_identity.pdf"
+        },
+        {
+          "name": "OCR",
+          "status": "completed",
+          "duration_ms": 5706.4,
+          "details": "Extracted 466 characters across 1 page(s) (conf: 0.63)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.2,
+          "details": "Classified as 'Identity' with confidence 0.95"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 253.7,
+          "details": "Identified 14 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.5,
+          "details": "Detected 18 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.2,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 1.6,
+          "details": "Synthesized typed Identity schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 23.1,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "admin@docintel.ai",
+      "created_at": "2026-09-03T10:42:25.439317",
+      "updated_at": "2026-09-03T10:42:25.439317",
+      "_id": "documents_3_1788412345"
+    },
+    {
+      "document_id": "DOC-9F2ECD",
+      "filename": "sample_application.pdf",
+      "file_type": ".pdf",
+      "file_size": 5763572,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-9F2ECD_sample_application.pdf",
+      "document_type": "Application",
+      "classification_confidence": 0.88,
+      "status": "Verified",
+      "raw_text": "GLOBAL TECH ENTERPRISES - ERIPLOVHENT 4PPLIC ATION FORT\n\nPERSONAL & CONTACT GETAILS\n\nApplicant Name: Priva Nair Email priyva.nair@example.com\n\nPhone: +981 $8 76601234 Date of Birth: 22/05/1882\n\nPermanent Address 12.4 Palm Grove, Whitefield, Bangalore, Karnataka SBOOBE\n\nIGENTIFICATION & FIMANE LAL \u00a5ERIFICA TION\n\nfadhaar umber 4816 2033 4a12 PAM Humber BC OFGSE aH\n\nBank Account for Payroll 887612346088 | |FS0: HOFCOOO 1424\n\nWORK EXPERIENCE & QUALIFICATIONS\n\nCurrent Employer Infosys Technologies Ltd | Total Experience: \u00a7 Years\n\nHighest Qualification: M.Tech in Computer Science, IIT Madras\n\nDEG LARA TION:\n\n| hereby declare thatall particulars furnished in thisapplication form are true and accurate to the bestof my knowledge.\n\nApplicant Signature: Priva Mair Gate: 1002/2025",
+      "redacted_text": "GLOBAL TECH ENTERPRISES - ERIPLOVHENT 4PPLIC ATION FORT\n\nPERSONAL & CONTACT GETAILS\n\nApplicant Name: P**** N*** Email p***r@example.com\n\nPhone: +981 $8 76601234 Date of Birth: 22/05/1882\n\nPermanent Address 12.4 Palm Grove, Whitefield, Bangalore, Karnataka SBOOBE\n\nIGENTIFICATION & FIMANE LAL \u00a5ERIFICA TION\n\nfadhaar umber 4816 2033 4a12 PAM Humber BC OFGSE aH\n\nBank Account for Payroll XXXX XXXX 6088 | |FS0: HOFCOOO 1424\n\nWORK EXPERIENCE & QUALIFICATIONS\n\nCurrent Employer Infosys Technologies Ltd | Total Experience: \u00a7 Years\n\nHighest Qualification: M.Tech in Computer Science, IIT Madras\n\nDEG LARA TION:\n\n| hereby declare thatall particulars furnished in thisapplication form are true and accurate to the bestof my knowledge.\n\nApplicant Signature: P**** M*** Gate: 1002/2025",
+      "entities": [
+        {
+          "text": "Infosys Technologies Ltd",
+          "type": "ORGANIZATION",
+          "confidence": 0.9996,
+          "start": 477,
+          "end": 501
+        },
+        {
+          "text": "Karnataka",
+          "type": "LOCATION",
+          "confidence": 0.9993,
+          "start": 252,
+          "end": 261
+        },
+        {
+          "text": "Priva Nair",
+          "type": "PERSON",
+          "confidence": 0.9983,
+          "start": 101,
+          "end": 111
+        },
+        {
+          "text": "Priva Mair",
+          "type": "PERSON",
+          "confidence": 0.9979,
+          "start": 753,
+          "end": 763
+        },
+        {
+          "text": "Bangalore",
+          "type": "LOCATION",
+          "confidence": 0.9965,
+          "start": 241,
+          "end": 250
+        },
+        {
+          "text": "Whitefield",
+          "type": "LOCATION",
+          "confidence": 0.9947,
+          "start": 229,
+          "end": 239
+        },
+        {
+          "text": "priyva",
+          "type": "PERSON",
+          "confidence": 0.9939,
+          "start": 118,
+          "end": 124
+        },
+        {
+          "text": "nair",
+          "type": "PERSON",
+          "confidence": 0.9921,
+          "start": 125,
+          "end": 129
+        },
+        {
+          "text": "Palm Grove",
+          "type": "LOCATION",
+          "confidence": 0.9865,
+          "start": 217,
+          "end": 227
+        },
+        {
+          "text": "IIT Madras",
+          "type": "ORGANIZATION",
+          "confidence": 0.9837,
+          "start": 582,
+          "end": 592
+        },
+        {
+          "text": "ERIPLOVHENT",
+          "type": "ORGANIZATION",
+          "confidence": 0.9735,
+          "start": 26,
+          "end": 37
+        },
+        {
+          "text": "AM Humber BC OFGSE aH",
+          "type": "ORGANIZATION",
+          "confidence": 0.8712,
+          "start": 343,
+          "end": 364
+        },
+        {
+          "text": "fadhaar",
+          "type": "MISCELLANEOUS",
+          "confidence": 0.5461,
+          "start": 313,
+          "end": 320
+        }
+      ],
+      "pii_entities": [
+        {
+          "type": "ORGANIZATION",
+          "value": "ERIPLOVHENT",
+          "confidence": 0.9735,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 26,
+          "end": 37,
+          "masked_value": "ERIPLOVHENT"
+        },
+        {
+          "type": "PERSON",
+          "value": "Priva Nair",
+          "confidence": 0.9983,
+          "source": "roberta",
+          "sensitive": true,
+          "valid": true,
+          "start": 101,
+          "end": 111,
+          "masked_value": "P**** N***"
+        },
+        {
+          "type": "EMAIL",
+          "value": "priyva.nair@example.com",
+          "confidence": 0.99,
+          "source": "regex",
+          "sensitive": true,
+          "valid": true,
+          "start": 118,
+          "end": 141,
+          "masked_value": "p***r@example.com"
+        },
+        {
+          "type": "PERSON",
+          "value": "priyva",
+          "confidence": 0.9939,
+          "source": "roberta",
+          "sensitive": true,
+          "valid": true,
+          "start": 118,
+          "end": 124,
+          "masked_value": "p*****"
+        },
+        {
+          "type": "PERSON",
+          "value": "nair",
+          "confidence": 0.9921,
+          "source": "roberta",
+          "sensitive": true,
+          "valid": true,
+          "start": 125,
+          "end": 129,
+          "masked_value": "n***"
+        },
+        {
+          "type": "DATE",
+          "value": "22/05/1882",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": false,
+          "valid": true,
+          "start": 182,
+          "end": 192,
+          "masked_value": "22/05/1882"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Palm Grove",
+          "confidence": 0.9865,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 217,
+          "end": 227,
+          "masked_value": "Palm Grove"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Whitefield",
+          "confidence": 0.9947,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 229,
+          "end": 239,
+          "masked_value": "Whitefield"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Bangalore",
+          "confidence": 0.9965,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 241,
+          "end": 250,
+          "masked_value": "Bangalore"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Karnataka",
+          "confidence": 0.9993,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 252,
+          "end": 261,
+          "masked_value": "Karnataka"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "AM Humber BC OFGSE aH",
+          "confidence": 0.8712,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 343,
+          "end": 364,
+          "masked_value": "AM Humber BC OFGSE aH"
+        },
+        {
+          "type": "AADHAAR",
+          "value": "887612346088",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": true,
+          "valid": true,
+          "start": 391,
+          "end": 403,
+          "masked_value": "XXXX XXXX 6088"
+        },
+        {
+          "type": "PHONE",
+          "value": "7612346088",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": true,
+          "valid": true,
+          "start": 393,
+          "end": 403,
+          "masked_value": "******6088"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "Infosys Technologies Ltd",
+          "confidence": 0.9996,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 477,
+          "end": 501,
+          "masked_value": "Infosys Technologies Ltd"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "IIT Madras",
+          "confidence": 0.9837,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 582,
+          "end": 592,
+          "masked_value": "IIT Madras"
+        },
+        {
+          "type": "PERSON",
+          "value": "Priva Mair",
+          "confidence": 0.9979,
+          "source": "roberta",
+          "sensitive": true,
+          "valid": true,
+          "start": 753,
+          "end": 763,
+          "masked_value": "P**** M***"
+        }
+      ],
+      "structured_data": {
+        "applicant_name": "Priva Nair Email priyva",
+        "email": "p***r@example.com",
+        "phone": "******6088",
+        "dates": [
+          "22/05/1882"
+        ],
+        "relevant_fields": {}
+      },
+      "confidence": 0.8286,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 11.0,
+          "details": "Stored 5763572 bytes as DOC-9F2ECD_sample_application.pdf"
+        },
+        {
+          "name": "OCR",
+          "status": "completed",
+          "duration_ms": 4424.0,
+          "details": "Extracted 779 characters across 1 page(s) (conf: 0.66)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.6,
+          "details": "Classified as 'Application' with confidence 0.88"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 269.7,
+          "details": "Identified 13 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 1.2,
+          "details": "Detected 16 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.2,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.8,
+          "details": "Synthesized typed Application schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 26.9,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "admin@docintel.ai",
+      "created_at": "2026-09-03T10:42:30.183187",
+      "updated_at": "2026-09-03T10:42:30.183187",
+      "_id": "documents_4_1788412350"
+    },
+    {
+      "document_id": "DOC-453185",
+      "filename": "test_invoice.png",
+      "file_type": ".png",
+      "file_size": 1586,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-453185_test_invoice.png",
+      "document_type": "Other",
+      "classification_confidence": 0.5,
+      "status": "Verified",
+      "raw_text": "",
+      "redacted_text": "",
+      "entities": [],
+      "pii_entities": [],
+      "structured_data": {
+        "entity_summary": {
+          "persons": [],
+          "organizations": [],
+          "locations": []
+        },
+        "sensitive_counts": 0
+      },
+      "confidence": 0.675,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 2.6,
+          "details": "Stored 1586 bytes as DOC-453185_test_invoice.png"
+        },
+        {
+          "name": "OCR",
+          "status": "warning",
+          "duration_ms": 5008.8,
+          "details": "Extracted 0 characters across 1 page(s) (conf: 0.85)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Classified as 'Other' with confidence 0.50"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Identified 0 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Detected 0 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.1,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Synthesized typed Other schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "anonymous",
+      "created_at": "2026-09-04T16:59:55.626828",
+      "updated_at": "2026-09-04T16:59:55.626828",
+      "_id": "documents_5_1788521395"
+    },
+    {
+      "document_id": "DOC-B242B2",
+      "filename": "sample_invoice.pdf",
+      "file_type": ".pdf",
+      "file_size": 5763572,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-B242B2_sample_invoice.pdf",
+      "document_type": "Invoice",
+      "classification_confidence": 0.7,
+      "status": "Verified",
+      "raw_text": "af ble CLOUD SOLUTIONS Py TLTD\n\nDiab agette U0 [pita tity trgp ete tee\n\nTAGS TAGS E\n\nInveind Aor IW W2025-80 14\n\nInveice Date: 16/01/7075\n\nQue Date: 30/01 fo 25\n\nltam Description\n\nCloud Dedicated Cluster Hesting (Standard Tier\n\nKube rnetes Production Gperations & Maintenance\n\nAutomated Secure Backups & Disaster Recovery\n\n2477 Enterprise 3LA Support Package\n\nPAYMENT IAS TRUC TIONS & REMITTANCE DETAILS:\n\nBank: State Bank of India | Branch: Koramangala, Barigalore\nAccount Number 8182736460182 | IFSC: SBINDDO 123.4\n\nAuthorized Signatonr Vikram Malhotra | PAN: ASBOATSS.4F\n\nBILLED Te (6 USTOMER):\n\nApex Global Logistics Ime\n\nContact rhulverma ga pexlogisticaooam\n\nPhone: +91 981122353544 | PAN: ABC DET234F\n\nUnit Prics\nINR 66,000.00\nINR 30,000.00\nINR 16,000.00\nINDRA 10,000.00\n\nSubtotal\n\nGST fis:\n\nGrand Total Amount\n\nTeta | Amaunt\n\nINR 66,000.00\n\nINR 30,000.00\n\nINR 16,000.00\n\nINR 10,000.00\n\nINA 120,000.00\n\nIN 21,600.00\n\nINR 147.600.00",
+      "redacted_text": "af ble CLOUD SOLUTIONS Py TLTD\n\nDiab agette U0 [pita tity trgp ete tee\n\nTAGS TAGS E\n\nInveind Aor IW W2025-80 14\n\nInveice Date: 16/01/7075\n\nQue Date: 30/01 fo 25\n\nltam Description\n\nCloud Dedicated Cluster Hesting (Standard Tier\n\nKube rnetes Production Gperations & Maintenance\n\nAutomated Secure Backups & Disaster Recovery\n\n2477 Enterprise 3LA Support Package\n\nPAYMENT IAS TRUC TIONS & REMITTANCE DETAILS:\n\nBank: State Bank of India | Branch: Koramangala, Barigalore\nAccount Number *********0182 | IFSC: SBINDDO 123.4\n\nAuthorized Signatonr V***** M******* | PAN: ASBOATSS.4F\n\nBILLED Te (6 USTOMER):\n\nApex Global Logistics Ime\n\nContact rhulverma ga pexlogisticaooam\n\nPhone: +91 XXXX XXXX 3544 | PAN: ABC DET234F\n\nUnit Prics\nINR 66,000.00\nINR 30,000.00\nINR 16,000.00\nINDRA 10,000.00\n\nSubtotal\n\nGST fis:\n\nGrand Total Amount\n\nTeta | Amaunt\n\nINR 66,000.00\n\nINR 30,000.00\n\nINR 16,000.00\n\nINR 10,000.00\n\nINA 120,000.00\n\nIN 21,600.00\n\nINR 147.600.00",
+      "entities": [
+        {
+          "text": "Vikram Malhotra",
+          "type": "PERSON",
+          "confidence": 0.9993,
+          "start": 539,
+          "end": 554
+        },
+        {
+          "text": "State Bank of India",
+          "type": "ORGANIZATION",
+          "confidence": 0.9991,
+          "start": 412,
+          "end": 431
+        },
+        {
+          "text": "Barigalore",
+          "type": "LOCATION",
+          "confidence": 0.9968,
+          "start": 455,
+          "end": 465
+        },
+        {
+          "text": "Koramangala",
+          "type": "LOCATION",
+          "confidence": 0.9958,
+          "start": 442,
+          "end": 453
+        },
+        {
+          "text": "Apex Global Logistics Ime",
+          "type": "ORGANIZATION",
+          "confidence": 0.9725,
+          "start": 598,
+          "end": 625
+        },
+        {
+          "text": "rhulverma ga pexlogisticaooam",
+          "type": "ORGANIZATION",
+          "confidence": 0.9193,
+          "start": 634,
+          "end": 664
+        },
+        {
+          "text": "INR",
+          "type": "MISCELLANEOUS",
+          "confidence": 0.9102,
+          "start": 834,
+          "end": 837
+        },
+        {
+          "text": "Inveind Aor",
+          "type": "ORGANIZATION",
+          "confidence": 0.7621,
+          "start": 84,
+          "end": 96
+        },
+        {
+          "text": "Diab ag",
+          "type": "ORGANIZATION",
+          "confidence": 0.6573,
+          "start": 32,
+          "end": 39
+        },
+        {
+          "text": "SBINDDO",
+          "type": "ORGANIZATION",
+          "confidence": 0.6004,
+          "start": 503,
+          "end": 510
+        },
+        {
+          "text": "Kube",
+          "type": "MISCELLANEOUS",
+          "confidence": 0.5845,
+          "start": 228,
+          "end": 232
+        }
+      ],
+      "pii_entities": [
+        {
+          "type": "ORGANIZATION",
+          "value": "Diab ag",
+          "confidence": 0.6573,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 32,
+          "end": 39,
+          "masked_value": "Diab ag"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "Inveind Aor",
+          "confidence": 0.7621,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 84,
+          "end": 96,
+          "masked_value": "Inveind Aor"
+        },
+        {
+          "type": "INVOICE_NUMBER",
+          "value": "eind",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": false,
+          "valid": true,
+          "start": 85,
+          "end": 92,
+          "masked_value": "eind"
+        },
+        {
+          "type": "INVOICE_NUMBER",
+          "value": "eice",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": false,
+          "valid": true,
+          "start": 113,
+          "end": 120,
+          "masked_value": "eice"
+        },
+        {
+          "type": "DATE",
+          "value": "16/01/7075",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": false,
+          "valid": true,
+          "start": 127,
+          "end": 137,
+          "masked_value": "16/01/7075"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "State Bank of India",
+          "confidence": 0.9991,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 412,
+          "end": 431,
+          "masked_value": "State Bank of India"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Koramangala",
+          "confidence": 0.9958,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 442,
+          "end": 453,
+          "masked_value": "Koramangala"
+        },
+        {
+          "type": "LOCATION",
+          "value": "Barigalore",
+          "confidence": 0.9968,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 455,
+          "end": 465,
+          "masked_value": "Barigalore"
+        },
+        {
+          "type": "BANK_ACCOUNT",
+          "value": "8182736460182",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": true,
+          "valid": true,
+          "start": 466,
+          "end": 494,
+          "masked_value": "*********0182"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "SBINDDO",
+          "confidence": 0.6004,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 503,
+          "end": 510,
+          "masked_value": "SBINDDO"
+        },
+        {
+          "type": "PERSON",
+          "value": "Vikram Malhotra",
+          "confidence": 0.9993,
+          "source": "roberta",
+          "sensitive": true,
+          "valid": true,
+          "start": 539,
+          "end": 554,
+          "masked_value": "V***** M*******"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "Apex Global Logistics Ime",
+          "confidence": 0.9725,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 598,
+          "end": 625,
+          "masked_value": "Apex Global Logistics Ime"
+        },
+        {
+          "type": "ORGANIZATION",
+          "value": "rhulverma ga pexlogisticaooam",
+          "confidence": 0.9193,
+          "source": "roberta",
+          "sensitive": false,
+          "valid": true,
+          "start": 634,
+          "end": 664,
+          "masked_value": "rhulverma ga pexlogisticaooam"
+        },
+        {
+          "type": "AADHAAR",
+          "value": "981122353544",
+          "confidence": 0.98,
+          "source": "regex",
+          "sensitive": true,
+          "valid": true,
+          "start": 676,
+          "end": 688,
+          "masked_value": "XXXX XXXX 3544"
+        }
+      ],
+      "structured_data": {
+        "invoice_number": "eind",
+        "invoice_date": "16/01/7075",
+        "due_date": "N/A",
+        "vendor_name": "State Bank of India",
+        "customer_name": "Apex Global Logistics Ime",
+        "subtotal": "N/A",
+        "tax": "N/A",
+        "total_amount": "N/A",
+        "currency": "INR"
+      },
+      "confidence": 0.7073,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 23.4,
+          "details": "Stored 5763572 bytes as DOC-B242B2_sample_invoice.pdf"
+        },
+        {
+          "name": "OCR",
+          "status": "completed",
+          "duration_ms": 15585.8,
+          "details": "Extracted 938 characters across 1 page(s) (conf: 0.57)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 5.6,
+          "details": "Classified as 'Invoice' with confidence 0.70"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 98229.8,
+          "details": "Identified 11 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 6.9,
+          "details": "Detected 14 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.2,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 7.1,
+          "details": "Synthesized typed Invoice schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 6359.3,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "smoke_test@docintel.ai",
+      "created_at": "2026-09-04T17:04:41.723440",
+      "updated_at": "2026-09-04T17:04:41.723440",
+      "_id": "documents_6_1788521681"
+    },
+    {
+      "document_id": "DOC-E7D73C",
+      "filename": "test_invoice.png",
+      "file_type": ".png",
+      "file_size": 1586,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-E7D73C_test_invoice.png",
+      "document_type": "Other",
+      "classification_confidence": 0.5,
+      "status": "Verified",
+      "raw_text": "",
+      "redacted_text": "",
+      "entities": [],
+      "pii_entities": [],
+      "structured_data": {
+        "entity_summary": {
+          "persons": [],
+          "organizations": [],
+          "locations": []
+        },
+        "sensitive_counts": 0
+      },
+      "confidence": 0.675,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 1.5,
+          "details": "Stored 1586 bytes as DOC-E7D73C_test_invoice.png"
+        },
+        {
+          "name": "OCR",
+          "status": "warning",
+          "duration_ms": 584.9,
+          "details": "Extracted 0 characters across 1 page(s) (conf: 0.85)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Classified as 'Other' with confidence 0.50"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Identified 0 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Detected 0 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.1,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Synthesized typed Other schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "anonymous",
+      "created_at": "2026-09-04T17:06:21.563901",
+      "updated_at": "2026-09-04T17:06:21.563901",
+      "_id": "documents_7_1788521781"
+    }
+  ],
+  "processing_logs": [
+    {
+      "document_id": "DOC-93EF2B",
+      "filename": "sample_invoice.pdf",
+      "total_duration_ms": 81068.0,
+      "status": "Verified",
+      "timestamp": "2026-09-03T10:42:04.682272",
+      "_id": "processing_logs_1_1788412331"
+    },
+    {
+      "document_id": "DOC-EED8C6",
+      "filename": "sample_contract.pdf",
+      "total_duration_ms": 7762.5,
+      "status": "Verified",
+      "timestamp": "2026-09-03T10:42:19.432259",
+      "_id": "processing_logs_2_1788412339"
+    },
+    {
+      "document_id": "DOC-5F57F0",
+      "filename": "sample_identity.pdf",
+      "total_duration_ms": 6003.0,
+      "status": "Verified",
+      "timestamp": "2026-09-03T10:42:25.439317",
+      "_id": "processing_logs_3_1788412345"
+    },
+    {
+      "document_id": "DOC-9F2ECD",
+      "filename": "sample_application.pdf",
+      "total_duration_ms": 4747.6,
+      "status": "Verified",
+      "timestamp": "2026-09-03T10:42:30.183187",
+      "_id": "processing_logs_4_1788412350"
+    },
+    {
+      "document_id": "DOC-453185",
+      "filename": "test_invoice.png",
+      "total_duration_ms": 5033.2,
+      "status": "Verified",
+      "timestamp": "2026-09-04T16:59:55.626828",
+      "_id": "processing_logs_5_1788521395"
+    },
+    {
+      "document_id": "DOC-B242B2",
+      "filename": "sample_invoice.pdf",
+      "total_duration_ms": 120238.0,
+      "status": "Verified",
+      "timestamp": "2026-09-04T17:04:41.723440",
+      "_id": "processing_logs_6_1788521688"
+    },
+    {
+      "document_id": "DOC-E7D73C",
+      "filename": "test_invoice.png",
+      "total_duration_ms": 602.0,
+      "status": "Verified",
+      "timestamp": "2026-09-04T17:06:21.563901",
+      "_id": "processing_logs_7_1788521781"
+    }
+  ]
+}
