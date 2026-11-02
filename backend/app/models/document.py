@@ -29,9 +29,17 @@ class DocumentModel(BaseModel):
     file_type: str
     file_size: int
     file_path: Optional[str] = None
+    # Generated storage key; the client filename is only ever metadata.
+    storage_key: Optional[str] = None
     document_type: str
     classification_confidence: float
     status: str  # "Verified" | "Flagged" | "Pending"
+    # Asynchronous processing lifecycle: uploaded | queued | processing | completed | failed | cancelled
+    processing_status: str = "uploaded"
+    processing_started_at: Optional[str] = None
+    processing_completed_at: Optional[str] = None
+    processing_error: Optional[Dict[str, Any]] = None
+    retry_count: int = 0
     raw_text: str
     redacted_text: str
     entities: List[EntityModel] = []

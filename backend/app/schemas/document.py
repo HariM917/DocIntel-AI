@@ -73,18 +73,22 @@ class DocumentResponse(BaseModel):
     filename: str
     file_type: str
     file_size: int
-    document_type: str
-    classification_confidence: float
-    status: str  # Verified, Flagged, Pending
-    raw_text: str
-    redacted_text: str
+    document_type: str = "Other"
+    classification_confidence: float = 0.0
+    status: str = "Pending"  # Verified, Flagged, Pending
+    # Asynchronous processing lifecycle
+    processing_status: str = "completed"
+    processing_error: Optional[Dict[str, Any]] = None
+    retry_count: int = 0
+    raw_text: str = ""
+    redacted_text: str = ""
     entities: List[EntityItem] = []
     pii_entities: List[PIIEntityItem] = []
     structured_data: Dict[str, Any] = {}
-    confidence: float
+    confidence: float = 0.0
     pipeline_steps: List[PipelineStep] = []
-    created_at: str
-    updated_at: str
+    created_at: str = ""
+    updated_at: str = ""
 
 
 class DocumentListResponse(BaseModel):
@@ -92,3 +96,29 @@ class DocumentListResponse(BaseModel):
     total: int
     page: int
     limit: int
+
+
+class DocumentUploadResponse(BaseModel):
+    """Returned immediately after an upload is accepted for processing."""
+
+    document_id: str
+    job_id: str
+    status: str = "queued"
+
+
+class ProcessingErrorInfo(BaseModel):
+    code: str
+    message: str
+
+
+class DocumentStatusResponse(BaseModel):
+    """Safe, authorization-scoped view of a document's processing state."""
+
+    document_id: str
+    status: str  # uploaded | queued | processing | completed | failed | cancelled
+    validation_status: Optional[str] = None  # Verified | Flagged | Pending
+    progress: Optional[int] = None
+    attempts: int = 0
+    error: Optional[ProcessingErrorInfo] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None

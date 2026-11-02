@@ -3,6 +3,8 @@ import {
   AuthResponse,
   User,
   DocumentItem,
+  DocumentUploadResult,
+  DocumentStatusResult,
   DashboardStats,
   RecentDocumentItem,
   SecurityRule,
@@ -58,15 +60,28 @@ export const authApi = {
 };
 
 export const documentApi = {
-  process: async (file: File, onUploadProgress?: (progressEvent: any) => void): Promise<DocumentItem> => {
+  // Uploads are asynchronous: the request returns as soon as the document is
+  // queued, and processing progress is tracked via getStatus().
+  process: async (
+    file: File,
+    onUploadProgress?: (progressEvent: any) => void
+  ): Promise<DocumentUploadResult> => {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await client.post<DocumentItem>('/documents/process', formData, {
+    const res = await client.post<DocumentUploadResult>('/documents/process', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
       onUploadProgress,
     });
+    return res.data;
+  },
+  getStatus: async (documentId: string): Promise<DocumentStatusResult> => {
+    const res = await client.get<DocumentStatusResult>(`/documents/${documentId}/status`);
+    return res.data;
+  },
+  reprocess: async (documentId: string): Promise<DocumentUploadResult> => {
+    const res = await client.post<DocumentUploadResult>(`/documents/${documentId}/reprocess`);
     return res.data;
   },
   list: async (params?: { type?: string; status?: string; search?: string; page?: number; limit?: number }) => {

@@ -206,6 +206,29 @@ class ResilientCollection:
             deleted_count = 0
         return ZeroDelResult()
 
+    async def find_one_and_update(self, query: Dict[str, Any], update: Dict[str, Any], **kwargs):
+        """Atomic compare-and-set emulation used for job claiming.
+
+        Mirrors ``pymongo``'s ``find_one_and_update`` closely enough for the
+        subset of operators the application uses ($set, $inc).
+        """
+        items = self._get_items()
+        for item in items:
+            if _match_query(item, query):
+                if "$set" in update:
+                    item.update(update["$set"])
+                if "$inc" in update:
+                    for inc_key, inc_value in update["$inc"].items():
+                        item[inc_key] = item.get(inc_key, 0) + inc_value
+                self.db_manager.save_fallback_data()
+                return dict(item)
+        if kwargs.get("upsert"):
+            new_doc = dict(query)
+            new_doc.update(update.get("$set", {}))
+            await self.insert_one(new_doc)
+            return dict(new_doc)
+        return None
+
     async def count_documents(self, query: Optional[Dict[str, Any]] = None) -> int:
         cursor = self.find(query)
         items = await cursor.to_list(length=None)
@@ -295,10 +318,17 @@ class DatabaseManager:
                 await self.db.documents.create_index("owner")
                 await self.db.documents.create_index("owner_id")
                 await self.db.documents.create_index("organization_id")
+                await self.db.documents.create_index("processing_status")
                 await self.db.documents.create_index([("owner_id", 1), ("created_at", -1)])
                 await self.db.documents.create_index([("organization_id", 1), ("created_at", -1)])
                 await self.db.documents.create_index([("organization_id", 1), ("document_id", 1)])
                 await self.db.documents.create_index([("raw_text", "text"), ("redacted_text", "text")])
+                # Processing job lifecycle indexes (Phase 2)
+                await self.db.processing_jobs.create_index("job_id", unique=True)
+                await self.db.processing_jobs.create_index("document_id")
+                await self.db.processing_jobs.create_index("status")
+                await self.db.processing_jobs.create_index([("document_id", 1), ("status", 1)])
+                await self.db.processing_jobs.create_index([("owner_id", 1), ("created_at", -1)])
                 await self.db.users.create_index("email", unique=True)
                 await self.db.users.create_index("user_id")
                 await self.db.security_rules.create_index("rule_id", unique=True)
@@ -334,6 +364,10 @@ class DatabaseManager:
     @property
     def processing_logs(self):
         return self.get_collection("processing_logs")
+
+    @property
+    def processing_jobs(self):
+        return self.get_collection("processing_jobs")
 
     @property
     def security_rules(self):

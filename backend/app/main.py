@@ -90,6 +90,31 @@ async def readiness_check():
     }
 
 
+# Processing-queue health: the API must not claim document processing is
+# healthy when no workers can consume jobs.
+@app.get("/api/processing/health", tags=["Health"])
+async def processing_health():
+    mode = settings.PROCESSING_QUEUE
+    if mode != "celery":
+        return {"queue_mode": mode, "workers_available": True, "detail": "in-process processing"}
+
+    try:
+        from app.worker.celery_app import celery_app
+
+        replies = celery_app.control.ping(timeout=1.0)
+        workers_available = bool(replies)
+    except Exception:
+        logger.warning("Celery worker health check failed.")
+        workers_available = False
+
+    return {
+        "queue_mode": mode,
+        "workers_available": workers_available,
+        "status": "ready" if workers_available else "degraded",
+    }
+
+
+
 # Include Routers under /api
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(documents_router, prefix=settings.API_V1_STR)

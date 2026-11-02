@@ -121,9 +121,39 @@ class Settings(BaseSettings):
         "image/jpg",
         "image/png",
     ]
+    # Magic-byte signatures used for content sniffing (extension alone is untrusted).
+    ALLOWED_FILE_SIGNATURES: List[str] = ["pdf", "jpeg", "png"]
     MAX_SEARCH_QUERY_LENGTH: int = 200
 
-    @field_validator("CORS_ORIGINS", "ALLOWED_EXTENSIONS", "ALLOWED_MIME_TYPES", mode="before")
+    # ------------------------------------------------------------------
+    # Phase 2 — asynchronous document processing
+    # ------------------------------------------------------------------
+    # Message broker / result backend for Celery. Never hard-code credentials.
+    REDIS_URL: str = "redis://localhost:6379/0"
+    # "local"  -> process in-process (no Redis required, ideal for development/testing)
+    # "celery" -> dispatch to Celery workers over Redis
+    PROCESSING_QUEUE: str = "local"
+    # Bounded retry policy for transient failures (exponential backoff).
+    MAX_PROCESSING_ATTEMPTS: int = 3
+    RETRY_BACKOFF_SECONDS: List[int] = [30, 60, 120]
+    # Celery task time limit (seconds) guarding against runaway pipelines.
+    PROCESSING_TASK_TIME_LIMIT: int = 1800
+
+    # ------------------------------------------------------------------
+    # Phase 2 — object storage abstraction
+    # ------------------------------------------------------------------
+    # "local" -> filesystem under STORAGE_LOCAL_ROOT; "s3" -> S3-compatible (future).
+    STORAGE_BACKEND: str = "local"
+    # When empty, defaults to the backend uploads directory.
+    STORAGE_LOCAL_ROOT: str = ""
+    # S3-compatible storage (optional; not required for local development).
+    S3_ENDPOINT: str = ""
+    S3_BUCKET: str = ""
+    S3_ACCESS_KEY: str = ""
+    S3_SECRET_KEY: str = ""
+    S3_REGION: str = ""
+
+    @field_validator("CORS_ORIGINS", "ALLOWED_EXTENSIONS", "ALLOWED_MIME_TYPES", "ALLOWED_FILE_SIGNATURES", "RETRY_BACKOFF_SECONDS", mode="before")
     @classmethod
     def _split_comma_separated(cls, value):
         """Allows list settings to be provided as comma-separated env strings."""
@@ -172,6 +202,20 @@ class Settings(BaseSettings):
         if not secret:
             secret = DEV_JWT_SECRET
         object.__setattr__(self, "JWT_SECRET_KEY", secret)
+
+        # Phase 2: validate processing/storage configuration for unsupported values.
+        queue_mode = (self.PROCESSING_QUEUE or "local").strip().lower()
+        if queue_mode not in ("local", "celery"):
+            raise ValueError("PROCESSING_QUEUE must be either 'local' or 'celery'.")
+        object.__setattr__(self, "PROCESSING_QUEUE", queue_mode)
+
+        storage_backend = (self.STORAGE_BACKEND or "local").strip().lower()
+        if storage_backend not in ("local", "s3"):
+            raise ValueError("STORAGE_BACKEND must be either 'local' or 's3'.")
+        object.__setattr__(self, "STORAGE_BACKEND", storage_backend)
+
+        if self.MAX_PROCESSING_ATTEMPTS < 1:
+            object.__setattr__(self, "MAX_PROCESSING_ATTEMPTS", 1)
 
         if is_production:
             if secret in INSECURE_SECRETS or len(secret) < 32:

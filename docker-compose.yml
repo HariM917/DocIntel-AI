@@ -1,44 +1,78 @@
 version: '3.8'
 
+x-backend-common: &backend-common
+  build:
+    context: ./backend
+    dockerfile: Dockerfile
+  restart: unless-stopped
+  environment:
+    - MONGODB_URI=mongodb://mongodb:27017
+    - MONGODB_DATABASE=docintel
+    - ENVIRONMENT=${ENVIRONMENT:-staging}
+    - ALLOW_LOCAL_FALLBACK=${ALLOW_LOCAL_FALLBACK:-false}
+    # Never hard-code secrets. Provide JWT_SECRET_KEY via the shell/.env at deploy time.
+    - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set to a strong random value}
+    - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+    - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+    - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173}
+    - BOOTSTRAP_ADMIN_EMAIL=${BOOTSTRAP_ADMIN_EMAIL:-}
+    - BOOTSTRAP_ADMIN_PASSWORD=${BOOTSTRAP_ADMIN_PASSWORD:-}
+    # Phase 2 — asynchronous processing
+    - REDIS_URL=redis://redis:6379/0
+    - PROCESSING_QUEUE=celery
+    - MAX_PROCESSING_ATTEMPTS=${MAX_PROCESSING_ATTEMPTS:-3}
+    - RETRY_BACKOFF_SECONDS=${RETRY_BACKOFF_SECONDS:-30,60,120}
+    - MAX_UPLOAD_SIZE_MB=${MAX_UPLOAD_SIZE_MB:-15}
+    # Phase 2 — storage (shared volume so API and worker see the same files)
+    - STORAGE_BACKEND=${STORAGE_BACKEND:-local}
+  volumes:
+    - ./data:/data
+    - ./backend/uploads:/app/uploads
+  networks:
+    - docintel-net
+
 services:
   mongodb:
     image: mongo:7.0
     container_name: docintel-mongodb
     restart: unless-stopped
+    # Bound to localhost only; not publicly exposed.
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
     networks:
       - docintel-net
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: docintel-backend
+  redis:
+    image: redis:7-alpine
+    container_name: docintel-redis
     restart: unless-stopped
-    ports:
-      - "8000:8000"
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017
-      - MONGODB_DATABASE=docintel
-      - ENVIRONMENT=${ENVIRONMENT:-staging}
-      - ALLOW_LOCAL_FALLBACK=${ALLOW_LOCAL_FALLBACK:-false}
-      # Never hard-code secrets. Provide JWT_SECRET_KEY via the shell/.env at deploy time.
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set to a strong random value}
-      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-60}
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173}
-      - BOOTSTRAP_ADMIN_EMAIL=${BOOTSTRAP_ADMIN_EMAIL:-}
-      - BOOTSTRAP_ADMIN_PASSWORD=${BOOTSTRAP_ADMIN_PASSWORD:-}
+    # Redis is intentionally NOT published to the host; only the internal
+    # network can reach it.
+    command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - ./data:/app/../data
-      - ./backend/uploads:/app/uploads
-    depends_on:
-      - mongodb
+      - redis_data:/data
     networks:
       - docintel-net
+
+  backend:
+    <<: *backend-common
+    container_name: docintel-backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+      - redis
+
+  worker:
+    <<: *backend-common
+    container_name: docintel-worker
+    # Same image as the API; only the start command differs.
+    command: ["celery", "-A", "app.worker.celery_app.celery_app", "worker", "--loglevel=info", "--concurrency=2"]
+    depends_on:
+      - mongodb
+      - redis
 
   frontend:
     build:
@@ -55,6 +89,7 @@ services:
 
 volumes:
   mongo_data:
+  redis_data:
 
 networks:
   docintel-net:

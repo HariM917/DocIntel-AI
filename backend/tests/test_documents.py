@@ -15,28 +15,39 @@ def test_document_upload_and_pipeline(client: TestClient, auth_headers):
     headers, _ = auth_headers("uploader")
     buf = _png_bytes()
 
-    # Process via API
+    # Phase 2: the upload is asynchronous and returns immediately with a job id.
     res = client.post(
         "/api/documents/process",
         headers=headers,
         files={"file": ("test_invoice.png", buf, "image/png")},
     )
-    assert res.status_code == 200
+    assert res.status_code == 202
     data = res.json()
 
     assert "document_id" in data
     assert data["document_id"].startswith("DOC-")
-    assert "status" in data
-    assert "structured_data" in data
-    assert "pipeline_steps" in data
-    assert len(data["pipeline_steps"]) > 0
+    assert data["job_id"].startswith("JOB-")
+    assert data["status"] == "queued"
 
     doc_id = data["document_id"]
 
-    # Retrieve document
+    # Processing state is exposed through the protected status endpoint.
+    status_res = client.get(f"/api/documents/{doc_id}/status", headers=headers)
+    assert status_res.status_code == 200
+    status = status_res.json()
+    assert status["document_id"] == doc_id
+    assert status["status"] in ("queued", "processing", "completed")
+
+    # Retrieve the (now processed) document record.
     get_res = client.get(f"/api/documents/{doc_id}", headers=headers)
     assert get_res.status_code == 200
-    assert get_res.json()["document_id"] == doc_id
+    doc = get_res.json()
+    assert doc["document_id"] == doc_id
+    assert "structured_data" in doc
+    assert "pipeline_steps" in doc
+    # In local (in-process) queue mode the background task has already run.
+    assert doc["processing_status"] == "completed"
+    assert len(doc["pipeline_steps"]) > 0
 
     # List documents
     list_res = client.get("/api/documents", headers=headers)

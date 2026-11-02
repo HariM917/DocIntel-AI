@@ -28,6 +28,9 @@ export const ProcessDocument: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [processingStage, setProcessingStage] = useState<
+    'idle' | 'uploading' | 'queued' | 'processing' | 'completed' | 'failed'
+  >('idle');
   const [processedResult, setProcessedResult] = useState<DocumentItem | null>(null);
   const [activeTab, setActiveTab] = useState<'structured' | 'entities' | 'pii' | 'comparison'>('structured');
   const [copiedRaw, setCopiedRaw] = useState(false);
@@ -68,12 +71,30 @@ export const ProcessDocument: React.FC = () => {
     setProcessedResult(null);
   };
 
+  // Polls the protected status endpoint until processing reaches a terminal state.
+  const pollProcessingStatus = async (documentId: string): Promise<string> => {
+    const intervalMs = 2500;
+    const maxWaitMs = 5 * 60 * 1000;
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < maxWaitMs) {
+      const status = await documentApi.getStatus(documentId);
+      if (status.status === 'processing') setProcessingStage('processing');
+      if (status.status === 'queued') setProcessingStage('queued');
+      if (['completed', 'failed', 'cancelled'].includes(status.status)) {
+        return status.status;
+      }
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    }
+    return 'processing';
+  };
+
   const handleProcess = async () => {
     if (!selectedFile) return;
 
     setIsProcessing(true);
     setCurrentStepIndex(0);
     setUploadProgress(10);
+    setProcessingStage('uploading');
 
     // Simulated progress timer for pipeline visualization
     const interval = setInterval(() => {
@@ -81,20 +102,34 @@ export const ProcessDocument: React.FC = () => {
     }, 700);
 
     try {
-      const result = await documentApi.process(selectedFile, (progressEvent) => {
+      // Asynchronous upload: returns as soon as the document is queued.
+      const upload = await documentApi.process(selectedFile, (progressEvent) => {
         if (progressEvent.total) {
           const pct = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           setUploadProgress(pct);
         }
       });
 
+      setUploadProgress(100);
+      setProcessingStage('queued');
+      const finalStatus = await pollProcessingStatus(upload.document_id);
       clearInterval(interval);
+
+      if (finalStatus !== 'completed') {
+        setProcessingStage('failed');
+        showToast('Document processing failed. Please try again.', 'error');
+        return;
+      }
+
+      const result = await documentApi.get(upload.document_id);
       setCurrentStepIndex(7);
       setProcessedResult(result);
+      setProcessingStage('completed');
       showToast(`Document ${result.document_id} processed successfully!`, 'success');
     } catch (err: any) {
       clearInterval(interval);
-      const msg = err.response?.data?.detail || 'Document processing failed. Please check server logs.';
+      setProcessingStage('failed');
+      const msg = err.response?.data?.detail || 'Document processing failed. Please try again.';
       showToast(msg, 'error');
     } finally {
       setIsProcessing(false);
@@ -207,7 +242,13 @@ export const ProcessDocument: React.FC = () => {
               {isProcessing ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Executing Pipeline...</span>
+                  <span>
+                    {processingStage === 'uploading'
+                      ? 'Uploading...'
+                      : processingStage === 'queued'
+                      ? 'Queued...'
+                      : 'Processing...'}
+                  </span>
                 </>
               ) : (
                 <>
@@ -216,6 +257,29 @@ export const ProcessDocument: React.FC = () => {
                 </>
               )}
             </button>
+          </div>
+        )}
+
+        {/* Async processing lifecycle indicator (Uploading → Queued → Processing → Completed/Failed) */}
+        {processingStage !== 'idle' && (
+          <div className="mt-3 flex items-center gap-2 text-xs font-semibold">
+            <span className="text-slate-400 uppercase tracking-wider">Status:</span>
+            <span
+              className={`px-2.5 py-1 rounded-full border ${
+                processingStage === 'completed'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : processingStage === 'failed'
+                  ? 'bg-rose-50 text-rose-700 border-rose-200'
+                  : 'bg-blue-50 text-blue-700 border-blue-200'
+              }`}
+            >
+              {processingStage.charAt(0).toUpperCase() + processingStage.slice(1)}
+            </span>
+            {processingStage === 'failed' && (
+              <span className="text-slate-500 font-normal">
+                Document processing failed. Please try again.
+              </span>
+            )}
           </div>
         )}
       </div>

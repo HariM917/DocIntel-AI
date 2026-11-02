@@ -80,7 +80,8 @@ def _upload(client: TestClient, headers: dict) -> str:
         headers=headers,
         files={"file": ("isolated.png", _png_bytes(), "image/png")},
     )
-    assert res.status_code == 200, res.text
+    # Phase 2: uploads are asynchronous and acknowledged with 202 Accepted.
+    assert res.status_code == 202, res.text
     return res.json()["document_id"]
 
 

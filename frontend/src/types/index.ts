@@ -48,6 +48,10 @@ export interface DocumentItem {
   document_type: 'Invoice' | 'Contract' | 'Identity' | 'Application' | 'Form' | 'Other';
   classification_confidence: number;
   status: 'Verified' | 'Flagged' | 'Pending';
+  // Asynchronous processing lifecycle (Phase 2)
+  processing_status: ProcessingStatus;
+  processing_error?: { code: string; message: string } | null;
+  retry_count?: number;
   raw_text: string;
   redacted_text: string;
   entities: EntityItem[];
@@ -57,6 +61,25 @@ export interface DocumentItem {
   pipeline_steps: PipelineStep[];
   created_at: string;
   updated_at: string;
+}
+
+export type ProcessingStatus = 'uploaded' | 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled';
+
+export interface DocumentUploadResult {
+  document_id: string;
+  job_id: string;
+  status: string;
+}
+
+export interface DocumentStatusResult {
+  document_id: string;
+  status: ProcessingStatus;
+  validation_status?: string | null;
+  progress?: number | null;
+  attempts: number;
+  error?: { code: string; message: string } | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface RecentDocumentItem {
