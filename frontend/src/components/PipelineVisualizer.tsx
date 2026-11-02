@@ -1,12 +1,15 @@
 import React from 'react';
 import {
-  UploadCloud,
   FileScan,
+  AlignLeft,
+  Layers,
   Tag,
   Cpu,
   ShieldAlert,
   ShieldCheck,
   FileSpreadsheet,
+  BadgeCheck,
+  Gauge,
   Database,
   CheckCircle2,
   Clock,
@@ -20,16 +23,25 @@ interface PipelineVisualizerProps {
   isProcessing?: boolean;
 }
 
+// Canonical Phase 3 pipeline stages. Names match the stage identifiers emitted
+// by the backend (`pipeline_steps[].name`) so completed documents display
+// accurately.
 const DEFAULT_STEP_NAMES = [
-  { name: 'UPLOAD', label: 'Upload', icon: UploadCloud },
-  { name: 'OCR', label: 'Tesseract OCR', icon: FileScan },
-  { name: 'CLASSIFICATION', label: 'Classification', icon: Tag },
-  { name: 'RoBERTa NER', label: 'RoBERTa NER', icon: Cpu },
-  { name: 'PII DETECTION', label: 'PII Detection', icon: ShieldAlert },
-  { name: 'VALIDATION & REDACTION', label: 'Redaction', icon: ShieldCheck },
-  { name: 'STRUCTURED EXTRACTION', label: 'Extraction', icon: FileSpreadsheet },
-  { name: 'INDEXING & STORAGE', label: 'FAISS Storage', icon: Database },
+  { name: 'OCR', label: 'OCR', icon: FileScan },
+  { name: 'TEXT_NORMALIZATION', label: 'Normalize', icon: AlignLeft },
+  { name: 'STRUCTURE_ANALYSIS', label: 'Structure', icon: Layers },
+  { name: 'CLASSIFICATION', label: 'Classify', icon: Tag },
+  { name: 'ENTITY_EXTRACTION', label: 'Entity NER', icon: Cpu },
+  { name: 'PII_DETECTION', label: 'PII Detect', icon: ShieldAlert },
+  { name: 'REDACTION', label: 'Redaction', icon: ShieldCheck },
+  { name: 'STRUCTURED_EXTRACTION', label: 'Extraction', icon: FileSpreadsheet },
+  { name: 'VALIDATION', label: 'Validation', icon: BadgeCheck },
+  { name: 'QUALITY_ASSESSMENT', label: 'Quality', icon: Gauge },
+  { name: 'INDEXING', label: 'Indexing', icon: Database },
 ];
+
+/** Normalizes a step name for tolerant matching (casing/separators). */
+const normalizeStepName = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
 export const PipelineVisualizer: React.FC<PipelineVisualizerProps> = ({
   steps = [],
@@ -49,18 +61,22 @@ export const PipelineVisualizer: React.FC<PipelineVisualizerProps> = ({
             )}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Real-time pipeline execution sequence across OCR, Neural NER, deterministic PII redaction and FAISS vector indexing.
+            Real-time pipeline execution sequence across OCR, normalization, structure detection, entity NER, PII redaction, validation and FAISS vector indexing.
           </p>
         </div>
       </div>
 
       {/* Horizontal Pipeline Sequence */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 relative">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 relative">
         {DEFAULT_STEP_NAMES.map((stepDef, idx) => {
           const Icon = stepDef.icon;
-          const stepData = steps.find(
-            (s) => s.name.toUpperCase().includes(stepDef.name.toUpperCase()) || stepDef.name.toUpperCase().includes(s.name.toUpperCase())
-          );
+          const target = normalizeStepName(stepDef.name);
+          const stepData =
+            steps.find((s) => normalizeStepName(s.name) === target) ||
+            steps.find((s) => {
+              const candidate = normalizeStepName(s.name);
+              return candidate.includes(target) || target.includes(candidate);
+            });
 
           let status = 'pending';
           if (stepData) {

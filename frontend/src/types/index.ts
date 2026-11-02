@@ -18,6 +18,12 @@ export interface EntityItem {
   confidence: number;
   start?: number;
   end?: number;
+  // Phase 3 — additive provenance/handling fields.
+  label?: string | null;
+  source?: string | null; // roberta | rule
+  confidence_source?: string | null; // model | heuristic
+  calibrated?: boolean | null;
+  normalized_value?: string | null;
 }
 
 export interface PIIEntityItem {
@@ -39,6 +45,37 @@ export interface PipelineStep {
   details?: string;
 }
 
+// Phase 3 — additive processing metadata types.
+export interface QualityAssessment {
+  score: number;
+  level: 'excellent' | 'good' | 'fair' | 'poor';
+  issues: string[];
+  factors?: Record<string, any>;
+}
+
+export interface FieldValidation {
+  fields: Record<string, 'valid' | 'invalid' | 'uncertain'>;
+  cross_field_warnings: Array<{ field: string; code: string; message: string }>;
+  failures: number;
+}
+
+export interface StageMetadata {
+  current_stage?: string | null;
+  stages: Array<{
+    stage: string;
+    status: string;
+    duration_ms: number;
+    error?: string | null;
+  }>;
+}
+
+export interface StructuredField {
+  value: any;
+  confidence: number | null;
+  source: 'rule' | 'ner' | 'pii' | 'derived' | 'default' | 'not_found';
+  validated?: 'valid' | 'invalid' | 'uncertain';
+}
+
 export interface DocumentItem {
   id: string;
   document_id: string;
@@ -57,8 +94,19 @@ export interface DocumentItem {
   entities: EntityItem[];
   pii_entities: PIIEntityItem[];
   structured_data: Record<string, any>;
+  // Per-field provenance/confidence metadata (value, confidence, source, validated).
+  structured_fields?: Record<string, StructuredField>;
   confidence: number;
   pipeline_steps: PipelineStep[];
+  // Phase 3 — additive, safe processing metadata.
+  normalized_text?: string;
+  structure?: Record<string, any>;
+  quality?: QualityAssessment | null;
+  validation?: FieldValidation | null;
+  processing_metrics?: Record<string, number>;
+  stage_metadata?: StageMetadata | null;
+  processing_warnings?: string[];
+  pipeline_version?: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -153,6 +153,28 @@ class Settings(BaseSettings):
     S3_SECRET_KEY: str = ""
     S3_REGION: str = ""
 
+    # ------------------------------------------------------------------
+    # Phase 3 — document intelligence pipeline
+    # ------------------------------------------------------------------
+    # Bumped whenever the intelligence pipeline's behaviour/shape changes so
+    # processed documents can be identified for future migrations.
+    PIPELINE_VERSION: str = "3.0"
+    # Embedding model generation tag; lets the system know which documents
+    # require re-indexing if the model is ever upgraded.
+    EMBEDDING_MODEL_VERSION: str = "1"
+    # Resource limits guarding against unbounded AI processing (Step 18).
+    # When a limit is reached the pipeline records a warning rather than
+    # silently discarding data or crashing the job.
+    MAX_DOCUMENT_PAGES: int = 50
+    MAX_TEXT_LENGTH: int = 200000
+    MAX_OCR_TIME: int = 120          # wall-clock OCR budget (seconds) per document
+    MAX_EMBEDDING_CHUNKS: int = 500
+    MIN_CHUNK_CHARS: int = 20
+    # Redaction strategy for sensitive values in derived text (Step 9):
+    #   "mask"        -> partially-visible masks, e.g. j***e@example.com (default)
+    #   "placeholder" -> deterministic, non-identifying placeholders, e.g. [REDACTED_EMAIL]
+    PII_REDACTION_MODE: str = "mask"
+
     @field_validator("CORS_ORIGINS", "ALLOWED_EXTENSIONS", "ALLOWED_MIME_TYPES", "ALLOWED_FILE_SIGNATURES", "RETRY_BACKOFF_SECONDS", mode="before")
     @classmethod
     def _split_comma_separated(cls, value):
@@ -216,6 +238,17 @@ class Settings(BaseSettings):
 
         if self.MAX_PROCESSING_ATTEMPTS < 1:
             object.__setattr__(self, "MAX_PROCESSING_ATTEMPTS", 1)
+
+        # Phase 3: resource limits must be positive; clamp rather than crash.
+        for _limit in (
+            "MAX_DOCUMENT_PAGES",
+            "MAX_TEXT_LENGTH",
+            "MAX_OCR_TIME",
+            "MAX_EMBEDDING_CHUNKS",
+            "MIN_CHUNK_CHARS",
+        ):
+            if getattr(self, _limit) < 1:
+                object.__setattr__(self, _limit, 1)
 
         if is_production:
             if secret in INSECURE_SECRETS or len(secret) < 32:

@@ -2,6 +2,8 @@ import re
 import logging
 from typing import List, Dict, Any, Optional
 
+from app.config import settings
+
 logger = logging.getLogger("docintel.redaction")
 
 
@@ -88,6 +90,17 @@ class RedactionService:
             return " ".join(w[0] + ("*" * max(1, len(w) - 1)) for w in words if w)
         return self.mask_generic(value)
 
+    @staticmethod
+    def get_placeholder(entity_type: str) -> str:
+        """Deterministic, non-identifying placeholder for a sensitive value.
+
+        The same entity type always maps to the same placeholder (e.g.
+        ``[REDACTED_EMAIL]``), so redacted text stays stable across runs while
+        leaking no information about the underlying value.
+        """
+        token = re.sub(r"[^A-Z0-9]+", "_", entity_type.upper()).strip("_") or "VALUE"
+        return f"[REDACTED_{token}]"
+
     def redact_document(
         self,
         text: str,
@@ -101,6 +114,7 @@ class RedactionService:
         active_rules = active_rules or {}
         redacted_text = text
         processed_entities = []
+        use_placeholder = str(getattr(settings, "PII_REDACTION_MODE", "mask")).lower() == "placeholder"
 
         # Sort entities by value length descending to avoid partial substring collisions
         sorted_entities = sorted(pii_entities, key=lambda x: len(x.get("value", "")), reverse=True)
@@ -114,7 +128,11 @@ class RedactionService:
             is_enabled = active_rules.get(ent_type, ent_copy.get("sensitive", False))
 
             if is_enabled and ent_copy.get("sensitive", False):
-                masked = self.get_masked_value(ent_type, raw_value)
+                masked = (
+                    self.get_placeholder(ent_type)
+                    if use_placeholder
+                    else self.get_masked_value(ent_type, raw_value)
+                )
                 ent_copy["masked_value"] = masked
                 # Replace in redacted text using exact word boundary or literal replacement
                 if raw_value in redacted_text:

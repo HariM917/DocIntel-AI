@@ -1,9 +1,23 @@
 import re
-from typing import Tuple
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class ValidationService:
-    """Validates extracted entity formats and checksum algorithms (Verhoeff, Luhn, etc.)."""
+    """Validates extracted entity formats and checksum algorithms (Verhoeff, Luhn, etc.).
+
+    Phase 3 adds field-level format checks (date, URL, currency, numeric, ID)
+    and cross-field consistency checks. Validation never discards a value; it
+    only classifies it as valid / invalid / uncertain.
+    """
+
+    # Accepted date formats, tried in order. Impossible dates (e.g. 99/99/9999)
+    # fail every format and are therefore reported as invalid.
+    DATE_FORMATS = (
+        "%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%Y/%m/%d",
+        "%d/%m/%y", "%d-%m-%y", "%m/%d/%Y",
+        "%d %B %Y", "%d %b %Y", "%B %d, %Y", "%b %d, %Y",
+    )
 
     # Verhoeff algorithm multiplication table
     VERHOEFF_D = [
@@ -111,6 +125,172 @@ class ValidationService:
         if 9 <= len(clean) <= 18:
             return True, "Valid Bank Account length"
         return False, "Bank Account should be 9 to 18 digits"
+
+    # ------------------------------------------------------------------
+    # Phase 3 — field-level format validation (Step 12)
+    # ------------------------------------------------------------------
+    @classmethod
+    def validate_date(cls, date_str: str) -> Tuple[bool, str]:
+        """Validates a date, rejecting impossible values such as 99/99/9999."""
+        s = (date_str or "").strip()
+        if not s:
+            return False, "Empty date"
+        for fmt in cls.DATE_FORMATS:
+            try:
+                datetime.strptime(s, fmt)
+                return True, "Valid date"
+            except ValueError:
+                continue
+        return False, "Unrecognized or impossible date"
+
+    @classmethod
+    def validate_url(cls, url_str: str) -> Tuple[bool, str]:
+        s = (url_str or "").strip()
+        if re.fullmatch(r"https?://[^\s/]+(?:\.[^\s/]+)+(?:/[^\s]*)?", s, re.IGNORECASE):
+            return True, "Valid URL"
+        return False, "Invalid URL"
+
+    @classmethod
+    def validate_currency(cls, value: str) -> Tuple[bool, str]:
+        """Validates a monetary amount with an optional symbol/code."""
+        s = (value or "").strip()
+        if re.fullmatch(
+            r"[₹$€£]?\s?-?[0-9][0-9,]*(?:\.[0-9]{1,2})?\s?(?:INR|USD|EUR|GBP|Rs\.?)?",
+            s,
+            re.IGNORECASE,
+        ):
+            return True, "Valid currency amount"
+        return False, "Invalid currency amount"
+
+    @classmethod
+    def validate_numeric(cls, value: str) -> Tuple[bool, str]:
+        s = re.sub(r"[,\s]", "", (value or "").strip())
+        if not s:
+            return False, "Empty numeric"
+        try:
+            float(s)
+            return True, "Valid numeric"
+        except ValueError:
+            return False, "Invalid numeric"
+
+    @classmethod
+    def validate_identifier(cls, value: str) -> Tuple[bool, str]:
+        s = (value or "").strip()
+        if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9\-_/]{2,30}", s):
+            return True, "Valid identifier"
+        return False, "Invalid identifier"
+
+    @classmethod
+    def classify_field(cls, field_type: str, value: Any) -> str:
+        """Classifies a field value as ``valid`` / ``invalid`` / ``uncertain``.
+
+        Unknown field types are reported as ``uncertain`` rather than guessed.
+        Compound names produced by the extraction schemas (``invoice_date``,
+        ``total_amount``, ``customer_email``) are resolved by token so they are
+        validated when a confident match exists.
+        """
+        if value in (None, "", "N/A", "n/a", "NA"):
+            return "uncertain"
+        ft = (field_type or "").lower()
+        validators = {
+            "email": cls.validate_email,
+            "phone": cls.validate_phone,
+            "date": cls.validate_date,
+            "url": cls.validate_url,
+            "currency": cls.validate_currency,
+            "amount": cls.validate_currency,
+            "total": cls.validate_currency,
+            "numeric": cls.validate_numeric,
+            "number": cls.validate_numeric,
+            "identifier": cls.validate_identifier,
+            "id": cls.validate_identifier,
+        }
+        fn = validators.get(ft)
+        if fn is None:
+            # Resolve compound names by their trailing token(s), longest first,
+            # so "invoice_date" -> date and "total_amount" -> amount.
+            tokens = [t for t in re.split(r"[^a-z]+", ft) if t]
+            for token in reversed(tokens):
+                if token in validators:
+                    fn = validators[token]
+                    break
+        if fn is None:
+            return "uncertain"
+        ok, _ = fn(str(value))
+        return "valid" if ok else "invalid"
+
+    # ------------------------------------------------------------------
+    # Phase 3 — cross-field consistency checks (Step 13)
+    # ------------------------------------------------------------------
+    @classmethod
+    def cross_field_validate(cls, document_type: str, structured_data: Dict[str, Any]) -> List[Dict[str, str]]:
+        """Returns validation warnings kept separate from extraction results.
+
+        Only domain rules justified by the document type are applied.
+        """
+        warnings: List[Dict[str, str]] = []
+        if not structured_data:
+            return warnings
+        dt = (document_type or "").strip().lower()
+
+        if dt == "invoice":
+            subtotal = cls._to_number(structured_data.get("subtotal"))
+            tax = cls._to_number(structured_data.get("tax"))
+            total = cls._to_number(structured_data.get("total_amount"))
+            if subtotal is not None and tax is not None and total is not None:
+                tolerance = max(1.0, 0.02 * abs(total))
+                if abs((subtotal + tax) - total) > tolerance:
+                    warnings.append({
+                        "field": "total_amount",
+                        "code": "CROSS_FIELD_MISMATCH",
+                        "message": "subtotal + tax does not equal total_amount.",
+                    })
+            for field in ("invoice_date", "due_date"):
+                val = structured_data.get(field)
+                if val and val != "N/A":
+                    ok, _ = cls.validate_date(str(val))
+                    if not ok:
+                        warnings.append({
+                            "field": field,
+                            "code": "INVALID_DATE",
+                            "message": f"'{field}' is not a valid date.",
+                        })
+
+        elif dt == "contract":
+            effective = cls._parse_date(structured_data.get("effective_date"))
+            expiry = cls._parse_date(structured_data.get("expiry_date"))
+            if effective and expiry and expiry < effective:
+                warnings.append({
+                    "field": "expiry_date",
+                    "code": "DATE_ORDER",
+                    "message": "expiry_date precedes effective_date.",
+                })
+
+        return warnings
+
+    @staticmethod
+    def _to_number(value: Any) -> Optional[float]:
+        if value is None:
+            return None
+        s = re.sub(r"[^0-9.\-]", "", str(value))
+        if not s or s in ("-", ".", "-."):
+            return None
+        try:
+            return float(s)
+        except ValueError:
+            return None
+
+    @classmethod
+    def _parse_date(cls, value: Any) -> Optional[datetime]:
+        s = (str(value) if value is not None else "").strip()
+        if not s or s == "N/A":
+            return None
+        for fmt in cls.DATE_FORMATS:
+            try:
+                return datetime.strptime(s, fmt)
+            except ValueError:
+                continue
+        return None
 
 
 validation_service = ValidationService()

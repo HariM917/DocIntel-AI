@@ -9,6 +9,12 @@ class EntityItem(BaseModel):
     confidence: float
     start: Optional[int] = None
     end: Optional[int] = None
+    # Phase 3 — additive provenance/handling fields (never replace `text`).
+    label: Optional[str] = None
+    source: Optional[str] = None          # "roberta" | "rule"
+    confidence_source: Optional[str] = None  # "model" | "heuristic"
+    calibrated: Optional[bool] = None
+    normalized_value: Optional[str] = None
 
 
 class PIIEntityItem(BaseModel):
@@ -85,8 +91,21 @@ class DocumentResponse(BaseModel):
     entities: List[EntityItem] = []
     pii_entities: List[PIIEntityItem] = []
     structured_data: Dict[str, Any] = {}
+    # Per-field provenance/confidence metadata (Step 11/24): value, confidence
+    # (None when not computable), source and validation verdict.
+    structured_fields: Dict[str, Any] = {}
     confidence: float = 0.0
     pipeline_steps: List[PipelineStep] = []
+    # Phase 3 — additive, safe processing metadata (Step 25/35).
+    # `raw_text`/`structured_data` retain their original Phase 1/2 meaning.
+    normalized_text: str = ""
+    structure: Dict[str, Any] = {}
+    quality: Optional[Dict[str, Any]] = None
+    validation: Optional[Dict[str, Any]] = None
+    processing_metrics: Dict[str, Any] = {}
+    stage_metadata: Optional[Dict[str, Any]] = None
+    processing_warnings: List[str] = []
+    pipeline_version: Optional[str] = None
     created_at: str = ""
     updated_at: str = ""
 

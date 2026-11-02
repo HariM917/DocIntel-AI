@@ -1,9 +1,9 @@
-"""Asynchronous document processing pipeline and job lifecycle (Phase 2).
+"""Asynchronous document processing pipeline and job lifecycle (Phase 2/3).
 
-This module owns the *exact* existing OCR -> NER -> PII -> redaction ->
-structured-extraction -> validation -> embedding pipeline, relocated so it can
-run inside a Celery worker (or an in-process background task) instead of the
-HTTP request cycle.
+This module owns the OCR -> text-normalization -> structure -> NER -> PII ->
+redaction -> structured-extraction -> validation -> quality -> embedding ->
+indexing pipeline, relocated so it can run inside a Celery worker (or an
+in-process background task) instead of the HTTP request cycle.
 
 Guarantees:
 * Authorization metadata (owner_id / organization_id) is read from the stored
@@ -37,6 +37,23 @@ from app.services.pii_service import pii_service
 from app.services.redaction_service import redaction_service
 from app.services.structured_extraction import structured_extraction_service
 from app.services.rag_service import rag_service
+from app.services.text_normalization_service import text_normalization_service
+from app.services.structure_service import structure_service
+from app.services.quality_service import quality_service
+from app.services.validation_service import validation_service
+from app.services.pipeline_stages import (
+    StageTracker,
+    OCR,
+    TEXT_NORMALIZATION,
+    STRUCTURE_ANALYSIS,
+    ENTITY_EXTRACTION,
+    PII_DETECTION,
+    REDACTION,
+    STRUCTURED_EXTRACTION,
+    VALIDATION,
+    QUALITY_ASSESSMENT,
+    INDEXING,
+)
 
 logger = logging.getLogger("docintel.processing")
 
@@ -262,73 +279,217 @@ def _run_pipeline_sync(
     ext: str,
     active_rules: Dict[str, bool],
 ) -> Dict[str, Any]:
-    """Executes the CPU/IO-bound intelligence pipeline (runs off the event loop).
+    """Executes the CPU/IO-bound Phase 3 intelligence pipeline off the event loop.
 
-    This is the unchanged Phase 1 pipeline; only its invocation has moved.
+    Pipeline (Phase 3):
+        OCR -> text normalization -> structure detection -> classification ->
+        entity extraction -> PII detection -> redaction -> schema-driven
+        structured extraction -> field/cross-field validation -> quality
+        assessment.
+
+    This is strictly additive: every Phase 1/2 result key is still produced, and
+    the Phase 3 keys (``normalized_text``, ``structure``, ``quality``,
+    ``validation``, ``processing_metrics``, ``stage_metadata``,
+    ``processing_warnings``, ``pipeline_version``) are added alongside them.
+
+    Failure strategy (Step 16): OCR failure aborts the document, but every later
+    stage degrades to a recorded warning so one weak component cannot destroy an
+    otherwise usable document. Empty OCR is detected and surfaced (warning +
+    near-zero quality) rather than blindly treated as a successful extraction.
     """
+    tracker = StageTracker()
+    metrics: Dict[str, float] = {}
+    warnings: List[str] = []
     pipeline_steps: List[Dict[str, Any]] = []
 
-    def _step(name: str, started: float, status: str, details: str) -> None:
+    def _record(record: Dict[str, Any], details: str = "") -> None:
+        metrics[record["stage"]] = record["duration_ms"]
         pipeline_steps.append({
-            "name": name,
-            "status": status,
-            "duration_ms": round((time.perf_counter() - started) * 1000, 1),
+            "name": record["stage"],
+            "status": record["status"],
+            "duration_ms": record["duration_ms"],
             "details": details,
         })
 
-    # OCR
-    t = time.perf_counter()
+    # --- OCR (critical) ---
+    t = tracker.start(OCR)
     try:
         ocr_result = ocr_service.process_document(file_path)
     except Exception as exc:  # OCR engines can fail transiently
+        tracker.complete(OCR, t, status="failed", error="OCR_FAILED")
         raise TransientProcessingError("OCR_FAILED", "Document OCR processing failed.") from exc
-    raw_text = ocr_result.get("text", "")
-    ocr_conf = ocr_result.get("confidence", 0.85)
-    _step(
-        "OCR",
-        t,
-        "completed" if raw_text else "warning",
-        f"Extracted {len(raw_text)} characters across {ocr_result.get('pages', 1)} page(s) (conf: {ocr_conf:.2f})",
-    )
 
-    # Classification
+    raw_text = ocr_result.get("text", "") or ""
+    ocr_conf = float(ocr_result.get("confidence", 0.0) or 0.0)
+    ocr_pages = int(ocr_result.get("pages", 1) or 0)
+    ocr_empty = bool(ocr_result.get("empty", not raw_text.strip()))
+    warnings.extend(ocr_result.get("warnings", []) or [])
+
+    if ocr_empty:
+        _record(
+            tracker.complete(OCR, t, status="warning", error="OCR_EMPTY"),
+            "OCR produced no usable text (flagged; pipeline continues in degraded mode).",
+        )
+    else:
+        _record(
+            tracker.complete(OCR, t, status="completed"),
+            f"Extracted {len(raw_text)} characters across {ocr_pages or 1} page(s) (conf {ocr_conf:.2f})",
+        )
+
+    # --- Text normalization (non-critical) ---
+    t = tracker.start(TEXT_NORMALIZATION)
+    normalized_text = raw_text
+    try:
+        norm = text_normalization_service.normalize(raw_text)
+        normalized_text = norm.get("normalized_text") or raw_text
+        warnings.extend(norm.get("warnings", []) or [])
+        _record(
+            tracker.complete(TEXT_NORMALIZATION, t, status="completed"),
+            f"Normalized {len(raw_text)} -> {len(normalized_text)} characters",
+        )
+    except Exception:
+        warnings.append("Text normalization failed; raw OCR text was used instead.")
+        _record(tracker.complete(TEXT_NORMALIZATION, t, status="warning", error="NORMALIZATION_FAILED"))
+
+    # Resource guard (Step 18): bound the analysable text length.
+    max_text = max(1, int(getattr(settings, "MAX_TEXT_LENGTH", 200000)))
+    if len(normalized_text) > max_text:
+        normalized_text = normalized_text[:max_text]
+        warnings.append(f"Text truncated to MAX_TEXT_LENGTH ({max_text} characters).")
+
+    # --- Structure detection (non-critical) ---
+    t = tracker.start(STRUCTURE_ANALYSIS)
+    structure: Dict[str, Any] = {}
+    try:
+        structure = structure_service.analyze(normalized_text)
+        _record(
+            tracker.complete(STRUCTURE_ANALYSIS, t, status="completed"),
+            f"{len(structure.get('headings', []))} heading(s), "
+            f"{len(structure.get('key_value_fields', {}))} key-value field(s)",
+        )
+    except Exception:
+        warnings.append("Document structure analysis failed.")
+        _record(tracker.complete(STRUCTURE_ANALYSIS, t, status="warning", error="STRUCTURE_FAILED"))
+
+    # --- Classification (kept from Phase 1; a recorded step, not a staged one) ---
     t = time.perf_counter()
-    classification = document_classifier.classify(raw_text)
+    classification = document_classifier.classify(normalized_text)
     doc_type = classification.get("document_type", "Other")
-    class_conf = classification.get("confidence", 0.75)
-    _step("CLASSIFICATION", t, "completed", f"Classified as '{doc_type}' with confidence {class_conf:.2f}")
+    class_conf = float(classification.get("confidence", 0.75))
+    metrics["CLASSIFICATION"] = round((time.perf_counter() - t) * 1000, 1)
+    pipeline_steps.append({
+        "name": "CLASSIFICATION",
+        "status": "completed",
+        "duration_ms": metrics["CLASSIFICATION"],
+        "details": f"Classified as '{doc_type}' with confidence {class_conf:.2f}",
+    })
 
-    # NER
-    t = time.perf_counter()
-    entities = ner_service.extract_entities(raw_text)
-    _step("RoBERTa NER", t, "completed", f"Identified {len(entities)} named entities (Person, Org, Location)")
+    # --- Entity extraction (non-critical) ---
+    t = tracker.start(ENTITY_EXTRACTION)
+    entities: List[Dict[str, Any]] = []
+    try:
+        entities = ner_service.extract_entities(normalized_text)
+        _record(
+            tracker.complete(ENTITY_EXTRACTION, t, status="completed"),
+            f"Identified {len(entities)} named entity(ies)",
+        )
+    except Exception:
+        warnings.append("Entity extraction failed.")
+        _record(tracker.complete(ENTITY_EXTRACTION, t, status="warning", error="NER_FAILED"))
 
-    # PII detection
-    t = time.perf_counter()
-    raw_pii_entities = pii_service.detect_pii(raw_text, ner_entities=entities)
-    _step(
-        "PII DETECTION",
-        t,
-        "completed",
-        f"Detected {len(raw_pii_entities)} PII items (Aadhaar, PAN, Emails, Phones, Financial)",
-    )
+    # --- PII detection (non-critical) ---
+    t = tracker.start(PII_DETECTION)
+    raw_pii_entities: List[Dict[str, Any]] = []
+    try:
+        raw_pii_entities = pii_service.detect_pii(normalized_text, ner_entities=entities)
+        _record(
+            tracker.complete(PII_DETECTION, t, status="completed"),
+            f"Detected {len(raw_pii_entities)} PII item(s)",
+        )
+    except Exception:
+        warnings.append("PII detection failed.")
+        _record(tracker.complete(PII_DETECTION, t, status="warning", error="PII_FAILED"))
 
-    # Validation & redaction
-    t = time.perf_counter()
-    redacted_text, pii_entities = redaction_service.redact_document(raw_text, raw_pii_entities, active_rules)
-    _step(
-        "VALIDATION & REDACTION",
-        t,
-        "completed",
-        f"Masked sensitive items based on {len(active_rules)} active security rules",
-    )
+    # --- Redaction (non-critical) ---
+    t = tracker.start(REDACTION)
+    redacted_text, pii_entities = normalized_text, list(raw_pii_entities)
+    try:
+        redacted_text, pii_entities = redaction_service.redact_document(
+            normalized_text, raw_pii_entities, active_rules
+        )
+        _record(
+            tracker.complete(REDACTION, t, status="completed"),
+            f"Masked sensitive items using {len(active_rules)} active security rule(s)",
+        )
+    except Exception:
+        warnings.append("Redaction failed; detected entities were retained unmasked.")
+        _record(tracker.complete(REDACTION, t, status="warning", error="REDACTION_FAILED"))
 
-    # Structured extraction
-    t = time.perf_counter()
-    structured_data = structured_extraction_service.extract(doc_type, raw_text, entities, pii_entities)
-    _step("STRUCTURED EXTRACTION", t, "completed", f"Synthesized typed {doc_type} schema")
+    # --- Schema-driven structured extraction (non-critical) ---
+    t = tracker.start(STRUCTURED_EXTRACTION)
+    structured_data: Dict[str, Any] = {}
+    structured_fields: Dict[str, Any] = {}
+    try:
+        extraction = structured_extraction_service.extract_with_metadata(
+            doc_type, normalized_text, entities, pii_entities
+        )
+        structured_data = extraction["structured_data"]
+        structured_fields = extraction["field_metadata"]
+        found = sum(1 for m in structured_fields.values() if m.get("source") not in (None, "not_found", "default"))
+        _record(
+            tracker.complete(STRUCTURED_EXTRACTION, t, status="completed"),
+            f"Synthesized typed {doc_type} schema ({found} field(s) grounded in document evidence)",
+        )
+    except Exception:
+        warnings.append("Structured field extraction failed.")
+        _record(tracker.complete(STRUCTURED_EXTRACTION, t, status="warning", error="EXTRACTION_FAILED"))
 
-    # Overall confidence & flagging
+    # --- Field + cross-field validation (non-critical) ---
+    t = tracker.start(VALIDATION)
+    field_validation: Dict[str, str] = {}
+    cross_field_warnings: List[Dict[str, str]] = []
+    validation_failures = 0
+    try:
+        for field, value in structured_data.items():
+            if isinstance(value, (list, dict)):
+                continue
+            verdict = validation_service.classify_field(field, value)
+            field_validation[field] = verdict
+            if field in structured_fields:
+                structured_fields[field]["validated"] = verdict
+            if verdict == "invalid":
+                validation_failures += 1
+        cross_field_warnings = validation_service.cross_field_validate(doc_type, structured_data)
+        _record(
+            tracker.complete(VALIDATION, t, status="completed"),
+            f"{validation_failures} invalid field(s), {len(cross_field_warnings)} cross-field warning(s)",
+        )
+    except Exception:
+        warnings.append("Field validation failed.")
+        _record(tracker.complete(VALIDATION, t, status="warning", error="VALIDATION_FAILED"))
+
+    # --- Quality assessment (non-critical) ---
+    t = tracker.start(QUALITY_ASSESSMENT)
+    try:
+        quality = quality_service.assess(
+            ocr_confidence=ocr_conf,
+            text_length=len(normalized_text),
+            entity_count=len(entities),
+            structured_data=structured_data,
+            validation_failures=validation_failures,
+            ocr_empty=ocr_empty,
+            pages=ocr_pages or 1,
+        )
+        _record(
+            tracker.complete(QUALITY_ASSESSMENT, t, status="completed"),
+            f"Pipeline quality {quality['score']:.2f} ({quality['level']})",
+        )
+    except Exception:
+        quality = {"score": 0.0, "level": "poor", "issues": ["Quality assessment failed."], "factors": {}}
+        warnings.append("Quality assessment failed.")
+        _record(tracker.complete(QUALITY_ASSESSMENT, t, status="warning", error="QUALITY_FAILED"))
+
+    # --- Overall confidence & flagging (Phase 1 semantics retained) ---
     conf_scores = [ocr_conf, class_conf]
     if entities:
         conf_scores.append(sum(e["confidence"] for e in entities) / len(entities))
@@ -338,6 +499,7 @@ def _run_pipeline_sync(
     validation_status = "Flagged" if (has_invalid_pii or overall_confidence < 0.65) else "Verified"
 
     return {
+        # Phase 1/2 keys (unchanged)
         "document_type": doc_type,
         "classification_confidence": class_conf,
         "status": validation_status,
@@ -348,6 +510,20 @@ def _run_pipeline_sync(
         "pii_entities": pii_entities,
         "structured_data": structured_data,
         "pipeline_steps": pipeline_steps,
+        # Phase 3 additions (additive)
+        "pipeline_version": settings.PIPELINE_VERSION,
+        "normalized_text": normalized_text,
+        "structure": structure,
+        "structured_fields": structured_fields,
+        "quality": quality,
+        "validation": {
+            "fields": field_validation,
+            "cross_field_warnings": cross_field_warnings,
+            "failures": validation_failures,
+        },
+        "processing_metrics": metrics,
+        "stage_metadata": tracker.summary,
+        "processing_warnings": warnings,
     }
 
 
@@ -417,6 +593,16 @@ async def run_processing_job(document_id: str, job_id: str) -> None:
 
     results = await asyncio.to_thread(_run_pipeline_sync, file_path, safe_name, ext, active_rules)
 
+    # Ensure the Phase 3 metadata containers exist even when a caller supplies a
+    # reduced result dict (e.g. the Phase 2 test stub).
+    results.setdefault("pipeline_steps", [])
+    results.setdefault("processing_metrics", {})
+    results.setdefault("processing_warnings", [])
+    results.setdefault("structured_fields", {})
+    results.setdefault("pipeline_version", settings.PIPELINE_VERSION)
+    stage_metadata = results.get("stage_metadata") or {"current_stage": None, "stages": []}
+    results["stage_metadata"] = stage_metadata
+
     # Persist atomically, but only if the document still exists in `processing`.
     now = _now()
     update_result = await db.documents.update_one(
@@ -443,21 +629,39 @@ async def run_processing_job(document_id: str, job_id: str) -> None:
         rag_service.index_document,
         document_id,
         safe_name,
-        results["document_type"],
-        results["redacted_text"],
+        results.get("document_type", "Other"),
+        results.get("redacted_text", ""),
         owner_id,
         owner_email,
         organization_id,
     )
-    results["pipeline_steps"].append({
-        "name": "INDEXING & STORAGE",
+    index_ms = round((time.perf_counter() - index_started) * 1000, 1)
+
+    # Record the embedding/indexing stage (Step 23) and the overall duration.
+    total_ms = round((time.perf_counter() - started) * 1000, 1)
+    results["processing_metrics"]["INDEXING"] = index_ms
+    results["processing_metrics"]["TOTAL"] = total_ms
+    stage_metadata["stages"].append({
+        "stage": INDEXING,
         "status": "completed",
-        "duration_ms": round((time.perf_counter() - index_started) * 1000, 1),
-        "details": "Persisted to MongoDB collections and indexed in FAISS vector database",
+        "started_at": None,
+        "completed_at": _now(),
+        "duration_ms": index_ms,
+        "error": None,
+    })
+    results["pipeline_steps"].append({
+        "name": "INDEXING",
+        "status": "completed",
+        "duration_ms": index_ms,
+        "details": "Chunked, embedded and indexed the redacted text in the FAISS vector store",
     })
     await db.documents.update_one(
         {"document_id": document_id},
-        {"$set": {"pipeline_steps": results["pipeline_steps"]}},
+        {"$set": {
+            "pipeline_steps": results["pipeline_steps"],
+            "processing_metrics": results["processing_metrics"],
+            "stage_metadata": stage_metadata,
+        }},
     )
 
     await db.processing_logs.insert_one({
@@ -466,8 +670,10 @@ async def run_processing_job(document_id: str, job_id: str) -> None:
         "filename": safe_name,
         "owner_id": owner_id,
         "organization_id": organization_id,
-        "total_duration_ms": round((time.perf_counter() - started) * 1000, 1),
-        "status": results["status"],
+        "total_duration_ms": total_ms,
+        "status": results.get("status"),
+        "pipeline_version": results.get("pipeline_version"),
+        "quality_score": (results.get("quality") or {}).get("score"),
         "timestamp": now,
     })
 
@@ -478,7 +684,7 @@ async def run_processing_job(document_id: str, job_id: str) -> None:
         document_id=document_id,
         operation="process_document",
         status=COMPLETED,
-        duration=round((time.perf_counter() - started) * 1000, 1),
+        duration=total_ms,
         retry_count=claimed.get("attempts", 0),
     )
 

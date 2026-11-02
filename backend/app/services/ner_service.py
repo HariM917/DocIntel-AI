@@ -95,13 +95,47 @@ class NERService:
                     char_offset += len(chunk)
 
                 if entities:
-                    return self._deduplicate_entities(entities)
+                    return self._enrich(self._deduplicate_entities(entities), source="roberta", calibrated=True)
             except Exception as e:
                 logger.error(f"Error during RoBERTa NER pipeline execution: {e}")
 
         # Fallback heuristic / pattern-based NER
         fallback_entities = self._fallback_ner(text)
-        return self._deduplicate_entities(fallback_entities)
+        return self._enrich(self._deduplicate_entities(fallback_entities), source="rule", calibrated=False)
+
+    def _enrich(self, entities: List[Dict[str, Any]], source: str, calibrated: bool) -> List[Dict[str, Any]]:
+        """Adds Phase 3 metadata to each entity.
+
+        ``label`` mirrors ``type`` (backward compatible), ``source`` records how
+        the entity was produced, and ``calibrated``/``confidence_source`` make
+        it explicit whether the confidence came from a real model probability
+        (``roberta``) or a rule-of-thumb heuristic (``rule``). Heuristic engines
+        have no true probabilities, so their confidence is never presented as a
+        calibrated model score.
+        """
+        for ent in entities:
+            ent.setdefault("label", ent.get("type"))
+            ent["source"] = source
+            ent["confidence_source"] = "model" if calibrated else "heuristic"
+            ent["calibrated"] = calibrated
+            ent["normalized_value"] = self._normalize_value(ent.get("type"), ent.get("text", ""))
+        return entities
+
+    @staticmethod
+    def _normalize_value(entity_type: str, text: str) -> str:
+        """Non-destructive entity normalization (Step 7).
+
+        The original ``text`` is never overwritten; the normalized form is
+        stored alongside it in ``normalized_value``.
+        """
+        t = re.sub(r"\s+", " ", (text or "").strip())
+        if entity_type == "PERSON":
+            # Drop a trailing/leading honorific-free normalization only removes
+            # surrounding punctuation; the name itself is preserved verbatim.
+            return t.strip(".,;:")
+        if entity_type in ("ORGANIZATION", "LOCATION"):
+            return t.strip(".,;:")
+        return t
 
     def _fallback_ner(self, text: str) -> List[Dict[str, Any]]:
         """High-precision pattern extraction for Person, Organization, Location when ML model is offline."""

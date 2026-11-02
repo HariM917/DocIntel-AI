@@ -163,14 +163,44 @@ class RAGService:
 
         Ownership metadata is stored alongside each chunk so retrieval can be
         authorized before any context reaches the synthesis layer.
+
+        Fail-closed: a document that carries *no* ownership metadata is never
+        indexed (Phase 3, Step 21), so unowned/legacy content cannot leak into
+        the retrieval pool.
         """
         if not text or not text.strip():
             return
 
+        if not owner_id and not owner_email:
+            logger.warning(
+                "Skipping RAG indexing for document %s: no ownership metadata (fail closed).",
+                document_id,
+            )
+            return
+
         self._ensure_loaded()
 
-        # 1. Chunk text
+        # 1. Chunk text (section-aware), then apply the resource limit.
         chunks = embedding_service.chunk_text(text)
+        if not chunks:
+            return
+        max_chunks = max(1, int(getattr(settings, "MAX_EMBEDDING_CHUNKS", 500)))
+        if len(chunks) > max_chunks:
+            logger.warning(
+                "Document %s produced %d chunks; capping at %d (MAX_EMBEDDING_CHUNKS).",
+                document_id, len(chunks), max_chunks,
+            )
+            chunks = chunks[:max_chunks]
+
+        # 2. Drop duplicate chunk texts within this document (Step 26).
+        deduped = []
+        seen_texts = set()
+        for chunk in chunks:
+            key = chunk["text"].strip()
+            if key and key not in seen_texts:
+                seen_texts.add(key)
+                deduped.append(chunk)
+        chunks = deduped
         if not chunks:
             return
 
@@ -185,6 +215,9 @@ class RAGService:
 
         self.index.add(vectors)
 
+        embedding_model = embedding_service.model_name
+        embedding_version = embedding_service.model_version
+
         for i, chunk in enumerate(chunks):
             self.metadata.append({
                 "document_id": document_id,
@@ -192,6 +225,10 @@ class RAGService:
                 "document_type": document_type,
                 "chunk_id": chunk["chunk_id"],
                 "text": chunk["text"],
+                "section": chunk.get("section"),
+                # Similarity / embedding provenance (Step 20)
+                "embedding_model": embedding_model,
+                "embedding_version": embedding_version,
                 # Authorization metadata
                 "owner_id": owner_id,
                 "owner": owner_email,

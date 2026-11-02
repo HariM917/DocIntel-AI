@@ -59,7 +59,11 @@ class OCRService:
             return image
 
     def extract_text_from_image(self, image: Image.Image) -> Tuple[str, float]:
-        """Runs Tesseract OCR on a PIL Image, returning extracted text and mean confidence (0.0 to 1.0)."""
+        """Runs Tesseract OCR on a PIL Image, returning extracted text and mean confidence (0.0 to 1.0).
+
+        When no text is recognised the confidence is reported honestly as 0.0
+        rather than a fabricated default (Phase 3, Step 3).
+        """
         try:
             preprocessed = self.preprocess_image(image)
             data = pytesseract.image_to_data(preprocessed, output_type=Output.DICT)
@@ -74,28 +78,36 @@ class OCRService:
                     if conf >= 0:
                         confidences.append(conf)
 
-            text = pytesseract.image_to_string(preprocessed)
-            mean_conf = (sum(confidences) / len(confidences) / 100.0) if confidences else 0.85
-            return text.strip(), round(min(1.0, max(0.1, mean_conf)), 4)
+            text = pytesseract.image_to_string(preprocessed).strip()
+            if not text:
+                return "", 0.0
+            # Neutral 0.5 when the engine returned text but no per-word confidence.
+            mean_conf = (sum(confidences) / len(confidences) / 100.0) if confidences else 0.5
+            return text, round(min(1.0, max(0.0, mean_conf)), 4)
         except Exception as e:
             logger.error(f"OCR image extraction error: {e}")
             # Fallback: simple image_to_string without data table
             try:
-                text = pytesseract.image_to_string(image)
-                return text.strip(), 0.75
+                text = pytesseract.image_to_string(image).strip()
+                return text, (0.5 if text else 0.0)
             except Exception as e2:
                 logger.error(f"Fallback OCR also failed: {e2}")
                 return "", 0.0
 
     def extract_text_from_pdf(self, file_path: Path) -> Tuple[str, float, int]:
-        """Extracts text from PDF. If native text is present, uses it; otherwise renders pages to images for OCR."""
+        """Extracts text from PDF. If native text is present, uses it; otherwise renders pages to images for OCR.
+
+        Page count is bounded by ``MAX_DOCUMENT_PAGES`` (Phase 3, Step 18).
+        """
         try:
             doc = fitz.open(file_path)
-            num_pages = len(doc)
+            total_pages = len(doc)
+            max_pages = max(1, int(getattr(settings, "MAX_DOCUMENT_PAGES", 50)))
+            pages_to_process = min(total_pages, max_pages)
             page_texts: List[str] = []
             confidences: List[float] = []
 
-            for page_num in range(num_pages):
+            for page_num in range(pages_to_process):
                 page = doc[page_num]
                 native_text = page.get_text().strip()
 
@@ -112,32 +124,51 @@ class OCRService:
                     confidences.append(conf)
 
             full_text = "\n\n--- Page Break ---\n\n".join(page_texts)
-            avg_conf = (sum(confidences) / len(confidences)) if confidences else 0.85
-            return full_text.strip(), round(avg_conf, 4), num_pages
+            avg_conf = (sum(confidences) / len(confidences)) if confidences else 0.0
+            return full_text.strip(), round(avg_conf, 4), pages_to_process
         except Exception as e:
             logger.error(f"PDF processing error: {e}")
             return "", 0.0, 0
 
     def process_document(self, file_path: Path) -> Dict[str, Any]:
-        """Main OCR entry point for both PDF and image files."""
+        """Main OCR entry point for both PDF and image files.
+
+        Returns a normalized result envelope that always exposes ``text``,
+        ``confidence``, ``pages``, ``method``, plus Phase 3 additions ``empty``
+        and ``warnings``.
+        """
         ext = file_path.suffix.lower()
         if ext == ".pdf":
             text, confidence, pages = self.extract_text_from_pdf(file_path)
+            warnings: List[str] = []
+            if pages == 0:
+                warnings.append("The PDF could not be opened or contained no readable pages.")
+            elif pages >= max(1, int(getattr(settings, "MAX_DOCUMENT_PAGES", 50))):
+                warnings.append(
+                    f"Document page limit reached; only the first {pages} page(s) were processed."
+                )
+            if not text.strip():
+                warnings.append("OCR produced no usable text from the PDF.")
             return {
                 "text": text,
                 "confidence": confidence,
                 "pages": pages,
                 "method": "pdf_pymupdf_tesseract",
+                "empty": not bool(text.strip()),
+                "warnings": warnings,
             }
         elif ext in [".jpg", ".jpeg", ".png"]:
             try:
                 img = Image.open(file_path)
                 text, confidence = self.extract_text_from_image(img)
+                warnings = [] if text.strip() else ["OCR produced no usable text from the image."]
                 return {
                     "text": text,
                     "confidence": confidence,
                     "pages": 1,
                     "method": "image_tesseract",
+                    "empty": not bool(text.strip()),
+                    "warnings": warnings,
                 }
             except Exception as e:
                 logger.error(f"Error opening image file {file_path}: {e}")
@@ -146,6 +177,8 @@ class OCRService:
                     "confidence": 0.0,
                     "pages": 1,
                     "method": "failed",
+                    "empty": True,
+                    "warnings": ["The image could not be opened or read."],
                     "error": str(e),
                 }
         else:
