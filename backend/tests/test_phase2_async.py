@@ -441,12 +441,15 @@ def test_rag_authorization_remains_intact():
     assert service._is_authorized({}, "u1", "a@x.com", None) is False
     assert service._is_authorized({"owner_id": "u1"}, "u1", None, None) is True
     assert service._is_authorized({"owner": "a@x.com"}, None, "a@x.com", None) is True
-    # Organization membership authorizes a chunk that carries owner metadata.
+    # Organization membership authorizes a chunk owned by a different user.
     assert service._is_authorized(
         {"owner_id": "someone-else", "organization_id": "org1"}, "u9", "z@x.com", "org1"
     ) is True
-    # A chunk with only an organization (no owner metadata) still fails closed.
-    assert service._is_authorized({"organization_id": "org1"}, "u9", "z@x.com", "org1") is False
+    # Organization membership also authorizes an org-scoped chunk, matching the
+    # centralized document policy (document.organization_id == user.organization_id, §3).
+    assert service._is_authorized({"organization_id": "org1"}, "u9", "z@x.com", "org1") is True
+    # A caller from a different organization is never authorized.
+    assert service._is_authorized({"organization_id": "org1"}, "u9", "z@x.com", "org2") is False
     assert service._is_authorized({"owner_id": "u1", "owner": "a@x.com"}, "u2", "b@x.com", None) is False
 
 

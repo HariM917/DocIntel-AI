@@ -197,11 +197,18 @@ def test_production_rejects_local_fallback():
 
 
 def test_production_accepts_secure_configuration():
+    # Production now also mandates Celery, an explicit MongoDB URI and an
+    # explicit Redis URL (§12/§17): long-running AI processing may not run in
+    # the API process and dev infrastructure defaults are rejected.
     s = Settings(
         _env_file=None,
         ENVIRONMENT="production",
         JWT_SECRET_KEY="y" * 48,
         CORS_ORIGINS=["https://app.example.com"],
         ALLOW_LOCAL_FALLBACK=False,
+        PROCESSING_QUEUE="celery",
+        MONGODB_URI="mongodb://mongo.internal:27017",
+        REDIS_URL="redis://redis.internal:6379/0",
     )
     assert s.JWT_SECRET_KEY == "y" * 48
+    assert s.PROCESSING_QUEUE == "celery"

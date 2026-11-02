@@ -37,6 +37,7 @@ from app.services.pii_service import pii_service
 from app.services.redaction_service import redaction_service
 from app.services.structured_extraction import structured_extraction_service
 from app.services.rag_service import rag_service
+from app.services.embedding_service import embedding_service
 from app.services.text_normalization_service import text_normalization_service
 from app.services.structure_service import structure_service
 from app.services.quality_service import quality_service
@@ -498,6 +499,14 @@ def _run_pipeline_sync(
     has_invalid_pii = any(not p.get("valid", True) for p in pii_entities)
     validation_status = "Flagged" if (has_invalid_pii or overall_confidence < 0.65) else "Verified"
 
+    # Canonical per-stage duration aliases (§29) alongside the stage-name keys,
+    # so consumers can rely on stable metric names.
+    metrics.setdefault("ocr_duration_ms", metrics.get("OCR", 0.0))
+    metrics.setdefault("ner_duration_ms", metrics.get("ENTITY_EXTRACTION", 0.0))
+    metrics.setdefault("pii_duration_ms", metrics.get("PII_DETECTION", 0.0))
+    metrics.setdefault("extraction_duration_ms", metrics.get("STRUCTURED_EXTRACTION", 0.0))
+    metrics.setdefault("quality_duration_ms", metrics.get("QUALITY_ASSESSMENT", 0.0))
+
     return {
         # Phase 1/2 keys (unchanged)
         "document_type": doc_type,
@@ -512,6 +521,9 @@ def _run_pipeline_sync(
         "pipeline_steps": pipeline_steps,
         # Phase 3 additions (additive)
         "pipeline_version": settings.PIPELINE_VERSION,
+        "ner_model_version": getattr(ner_service, "model_name", settings.HF_MODEL_NAME),
+        "ocr_model_version": getattr(ocr_service, "engine_version", "pymupdf+tesseract"),
+        "embedding_model_version": settings.EMBEDDING_MODEL_VERSION,
         "normalized_text": normalized_text,
         "structure": structure,
         "structured_fields": structured_fields,
@@ -603,15 +615,18 @@ async def run_processing_job(document_id: str, job_id: str) -> None:
     stage_metadata = results.get("stage_metadata") or {"current_stage": None, "stages": []}
     results["stage_metadata"] = stage_metadata
 
-    # Persist atomically, but only if the document still exists in `processing`.
+    # Persist the derived results atomically, but only if the document still
+    # exists in `processing`. The lifecycle is deliberately NOT advanced to
+    # `completed` here: RAG embedding/indexing (below) is a declared pipeline
+    # stage, so `completed` must only be reported once the document is actually
+    # retrievable -- otherwise a client that reacts to `completed` can query
+    # search/chat before the vector index contains the document.
     now = _now()
     update_result = await db.documents.update_one(
         {"document_id": document_id, "processing_status": PROCESSING},
         {
             "$set": {
                 **results,
-                "processing_status": COMPLETED,
-                "processing_completed_at": now,
                 "processing_error": None,
                 "retry_count": claimed.get("attempts", 0),
                 "updated_at": now,
@@ -640,7 +655,11 @@ async def run_processing_job(document_id: str, job_id: str) -> None:
     # Record the embedding/indexing stage (Step 23) and the overall duration.
     total_ms = round((time.perf_counter() - started) * 1000, 1)
     results["processing_metrics"]["INDEXING"] = index_ms
+    results["processing_metrics"]["embedding_duration_ms"] = index_ms
     results["processing_metrics"]["TOTAL"] = total_ms
+    results["processing_metrics"]["total_processing_duration_ms"] = total_ms
+    # Record the embedding model generation actually used (§9/§30).
+    results["embedding_model_version"] = embedding_service.model_version
     stage_metadata["stages"].append({
         "stage": INDEXING,
         "status": "completed",
@@ -661,6 +680,12 @@ async def run_processing_job(document_id: str, job_id: str) -> None:
             "pipeline_steps": results["pipeline_steps"],
             "processing_metrics": results["processing_metrics"],
             "stage_metadata": stage_metadata,
+            "embedding_model_version": results.get("embedding_model_version"),
+            # The lifecycle is advanced to `completed` only now that the
+            # document has been embedded/indexed and is retrievable via RAG.
+            "processing_status": COMPLETED,
+            "processing_completed_at": _now(),
+            "updated_at": _now(),
         }},
     )
 
@@ -716,7 +741,14 @@ async def execute_document_job(
                 code, message = exc.code, exc.message
             else:
                 code, message = "PROCESSING_ERROR", "Document processing failed."
-                logger.exception("Unexpected error during document processing.")
+                # §19/§42 — never log the raw exception message or a stack
+                # trace here: an unexpected third-party exception could embed
+                # document content/PII in its message. Only the exception class
+                # name (an internal, non-sensitive identifier) is recorded.
+                logger.error(
+                    "Unexpected error during document processing (%s).",
+                    type(exc).__name__,
+                )
 
             job = await get_processing_job(job_id)
             attempts = (job or {}).get("attempts", attempt_index)
@@ -739,6 +771,24 @@ async def execute_document_job(
                 await asyncio.to_thread(sleep_fn, delay)
 
 
+async def _run_document_processing_async(document_id: str, job_id: str) -> None:
+    # A Celery worker process does not execute the FastAPI lifespan, so the
+    # shared `db` singleton is never connected there. The API process already
+    # connects during startup (and the local/dev background-task path reuses
+    # that connection), so only connect when this entrypoint is running in a
+    # process that has not yet established a connection.
+    from app.database import db
+
+    connected_here = not db.is_connected
+    if connected_here:
+        await db.connect()
+    try:
+        await execute_document_job(document_id, job_id)
+    finally:
+        if connected_here:
+            await db.disconnect()
+
+
 def run_document_processing(document_id: str, job_id: str) -> None:
     """Synchronous entrypoint used by Celery workers and background tasks."""
-    asyncio.run(execute_document_job(document_id, job_id))
+    asyncio.run(_run_document_processing_async(document_id, job_id))

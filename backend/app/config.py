@@ -21,6 +21,11 @@ for d in [DATA_DIR, SAMPLE_DOCS_DIR, PROCESSED_DIR, VECTOR_INDEX_DIR, UPLOAD_DIR
 # Development-only fallback secret. Never allowed in production (see validation below).
 DEV_JWT_SECRET = "docintel-dev-only-insecure-jwt-secret-do-not-use-in-production"
 
+# Development-only infrastructure defaults. Production must configure these
+# explicitly (see the production guard in ``_validate_security``).
+DEV_MONGODB_URI = "mongodb://localhost:27017"
+DEV_REDIS_URL = "redis://localhost:6379/0"
+
 # Known insecure/placeholder secrets that must never be used in production.
 INSECURE_SECRETS = {
     "",
@@ -269,6 +274,31 @@ class Settings(BaseSettings):
             if self.BOOTSTRAP_ADMIN_PASSWORD and len(self.BOOTSTRAP_ADMIN_PASSWORD) < 12:
                 raise ValueError(
                     "BOOTSTRAP_ADMIN_PASSWORD must be at least 12 characters in production."
+                )
+            # §12 — document processing must run in Celery workers in production;
+            # the API never executes the AI pipeline inline (dev convenience only).
+            if self.PROCESSING_QUEUE != "celery":
+                raise ValueError(
+                    "PROCESSING_QUEUE must be 'celery' in production. Long-running "
+                    "document processing may not run inside the API process."
+                )
+            # §17 — required infrastructure must be configured explicitly.
+            if not self.MONGODB_URI or self.MONGODB_URI.strip() == DEV_MONGODB_URI:
+                raise ValueError(
+                    "MONGODB_URI must be explicitly configured in production; the "
+                    "development default is not permitted."
+                )
+            if not self.REDIS_URL or self.REDIS_URL.strip() == DEV_REDIS_URL:
+                raise ValueError(
+                    "REDIS_URL must be explicitly configured in production "
+                    "(Celery broker/result backend)."
+                )
+            # §31 — S3 object storage is not implemented; production must refuse it
+            # rather than silently degrade to local filesystem storage.
+            if self.STORAGE_BACKEND == "s3":
+                raise ValueError(
+                    "STORAGE_BACKEND=s3 is not implemented yet. Set "
+                    "STORAGE_BACKEND=local (S3 support is a future phase)."
                 )
 
         return self

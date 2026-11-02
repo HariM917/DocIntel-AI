@@ -36,9 +36,10 @@ Manual document processing introduces severe operational pain points:
 | 🛡️ **Algorithmic PII Validation** | Deterministic regex coupled with **Verhoeff algorithm** (Aadhaar 12-digit checksum), **Luhn MOD-10 algorithm** (credit cards), and Indian Income Tax Department status validation (PAN). |
 | 🔒 **Dynamic Redaction Engine** | Enterprise security policies persisted in MongoDB that mask sensitive fields (e.g. `XXXX XXXX 9012`, `XXXXX1234F`, `r***@example.com`) across UI and text storage. |
 | 📊 **Typed Schema Extraction** | Domain schema synthesis extracting invoices (subtotal, tax, currency, vendor, dates), contracts (parties, governing law), and identity credentials without hallucination. |
-| ⚡ **Conversational RAG Assistant** | SentenceTransformers (`all-MiniLM-L6-v2`) chunking and embedding documents into **FAISS** vector store for context-grounded conversational QA with source citations. |
-| 📈 **Live Telemetry Dashboard** | Real-time MongoDB metrics: Total Processed, Extraction Accuracy (%), Protected Entities, and Calculated Time Saved. |
-| 🔄 **Zero-Config Resilient Store** | Transparent local persistent fallback (`data/local_db.json`) allowing immediate full functionality on any machine without requiring an active MongoDB daemon. |
+| ⚡ **Asynchronous Processing Pipeline** | Uploads return `202 Accepted` immediately; the AI pipeline runs in **Celery** workers over **Redis**, with atomic job claiming (no double-processing), bounded exponential-backoff retries, and idempotent re-processing. Production refuses to run the queue inline. |
+| ⚡ **Conversational RAG Assistant** | SentenceTransformers (`all-MiniLM-L6-v2`) chunking and embedding documents into **FAISS** vector store for context-grounded conversational QA with source citations. Retrieval is **authorization-filtered at the vector level**, so a caller never sees another tenant's chunks. |
+| 📈 **Live Telemetry Dashboard** | Real-time MongoDB metrics: Total Processed, **Avg. Extraction Confidence (%)**, Protected Entities, and Calculated Time Saved. Confidence is never fabricated — it is only reported where the pipeline actually measured it. |
+| 🔄 **Resilient Local Dev Store** | In **non-production only**, a local JSON fallback (`data/local_db.json`) lets the stack run without a MongoDB daemon. **Production requires MongoDB**, the fallback is disabled, and the app refuses to start otherwise. |
 
 ---
 
@@ -55,27 +56,36 @@ flowchart TD
     end
 
     subgraph Gateway["API Gateway (FastAPI)"]
-        AUTH["JWT Authentication & Route Guards"]
-        EP1["/api/documents/process"]
+        AUTH["JWT Authentication & Centralized Authorization"]
+        EP1["POST /api/documents/process (202 Accepted)"]
         EP2["/api/dashboard/stats"]
         EP3["/api/security/rules"]
         EP4["/api/chat"]
     end
 
-    subgraph Pipeline["8-Stage Intelligence Pipeline"]
+    subgraph Queue["Async Worker Tier (Phase 2)"]
+        BROKER[("Redis broker + result backend")]
+        WORKER["Celery worker — claim job atomically, run pipeline, retry on transient failure"]
+    end
+
+    subgraph Pipeline["Document Intelligence Pipeline (instrumented, fault-isolated)"]
         S1["1. Upload & Staging"]
-        S2["2. PyMuPDF + Tesseract OCR"]
-        S3["3. Multi-Signal Classifier"]
-        S4["4. RoBERTa Named Entity Recognition"]
-        S5["5. Deterministic PII & Checksum Validation"]
-        S6["6. Redaction Policy Engine"]
-        S7["7. Typed Schema Synthesizer"]
-        S8["8. FAISS Vector Indexer"]
+        S2["2. PyMuPDF + Tesseract OCR (critical)"]
+        S3["3. Text Normalization"]
+        S4["4. Structure & Multi-Signal Classification"]
+        S5["5. RoBERTa Named Entity Recognition"]
+        S6["6. Deterministic PII Detection"]
+        S7["7. Redaction Engine"]
+        S8["8. Typed Schema Extraction"]
+        S9["9. Validation (Verhoeff / Luhn / PAN)"]
+        S10["10. Quality Assessment"]
+        S11["11. Embedding"]
+        S12["12. FAISS Indexing"]
     end
 
     subgraph Storage["Persistence Tier"]
-        DB[("MongoDB 7.0 / Resilient JSON Store")]
-        VEC[("FAISS Dense Vector Index")]
+        DB[("MongoDB 7.0 (required in prod)")]
+        VEC[("FAISS Dense Vector Index — tenant-tagged chunks")]
     end
 
     UI1 --> EP1
@@ -84,10 +94,12 @@ flowchart TD
     UI4 --> EP3
     UI5 --> EP4
 
-    EP1 --> S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8
-    S7 --> DB
-    S8 --> VEC
+    EP1 --> S1 --> BROKER --> WORKER
+    WORKER --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8 --> S9 --> S10 --> S11 --> S12
+    S8 --> DB
+    S12 --> VEC
     EP4 <--> VEC
+    EP4 --> DB
 ```
 
 ---
@@ -97,7 +109,7 @@ flowchart TD
 ```
 DocIntel-AI/
 ├── .gitignore
-├── docker-compose.yml               # Multi-container stack (Mongo + Backend + Frontend)
+├── docker-compose.yml               # Multi-container stack (Mongo + Redis + API + Celery worker + Frontend)
 ├── README.md                        # Master project documentation
 │
 ├── backend/
@@ -133,21 +145,34 @@ DocIntel-AI/
 │   │   │   └── security.py          # SecurityRule, SecurityRuleUpdate
 │   │   │
 │   │   ├── services/                # Business & AI Intelligence Services
-│   │   │   ├── document_classifier.py    # Invoice/Contract/Identity multi-signal classifier
-│   │   │   ├── document_service.py       # Master 12-step pipeline orchestrator
-│   │   │   ├── embedding_service.py      # SentenceTransformers dense vector embeddings
-│   │   │   ├── ner_service.py            # RoBERTa token classification (NER)
-│   │   │   ├── ocr_service.py            # PyMuPDF + Tesseract OCR engine
-│   │   │   ├── pii_service.py            # Regex + context PII detection
-│   │   │   ├── rag_service.py            # FAISS index management & grounded synthesis
-│   │   │   ├── redaction_service.py      # Masking policies for sensitive entities
-│   │   │   ├── structured_extraction.py  # Structured typed JSON schema generation
-│   │   │   └── validation_service.py     # Verhoeff (Aadhaar), Luhn (Cards), PAN checksums
+│   │   │   ├── authorization_service.py   # Single source of truth for document/chunk access
+│   │   │   ├── document_classifier.py     # Invoice/Contract/Identity multi-signal classifier
+│   │   │   ├── document_service.py        # Ingestion, staging, storage, lifecycle orchestration
+│   │   │   ├── embedding_service.py       # SentenceTransformers embeddings + deterministic SHA-256 fallback
+│   │   │   ├── ner_service.py             # RoBERTa token classification (NER) + entity validation
+│   │   │   ├── ocr_service.py             # PyMuPDF + Tesseract OCR engine
+│   │   │   ├── pipeline_stages.py         # Stage-name constants & duration tracking
+│   │   │   ├── pii_service.py             # Regex + context PII detection
+│   │   │   ├── processing_service.py      # Job lifecycle, atomic claim, retry policy, pipeline driver
+│   │   │   ├── quality_service.py         # Weighted quality assessment (OCR/coverage/entity density)
+│   │   │   ├── queue_service.py           # local | celery dispatch selection
+│   │   │   ├── rag_service.py             # FAISS index, authorized retrieval & grounded synthesis
+│   │   │   ├── redaction_service.py       # Masking / deterministic placeholder policies
+│   │   │   ├── storage_service.py         # StorageService abstraction (local filesystem)
+│   │   │   ├── structure_service.py       # Heading/section structure detection
+│   │   │   ├── structured_extraction.py   # Structured typed JSON schema generation
+│   │   │   ├── text_normalization_service.py # Deterministic OCR text normalization
+│   │   │   └── validation_service.py      # Verhoeff (Aadhaar), Luhn (Cards), PAN checksums
+│   │   │
+│   │   ├── worker/
+│   │   │   └── celery_app.py        # Celery application (Redis broker/backend, acks_late)
+│   │   ├── tasks/
+│   │   │   └── document_tasks.py    # Celery task wrapping the processing job
 │   │   │
 │   │   └── utils/
-│   │       └── security.py          # Password hashing & JWT token verification
+│   │       └── security.py          # Password hashing, JWT, authorization dependency helpers
 │   │
-│   └── tests/                       # Automated Pytest Suite (23 Tests)
+│   └── tests/                       # Automated Pytest Suite (143 Tests)
 │       ├── conftest.py              # TestClient & database session setup
 │       ├── test_auth.py             # User registration, login, token guards
 │       ├── test_dashboard_search.py # Dashboard stats, search, security rules, chat
@@ -155,7 +180,11 @@ DocIntel-AI/
 │       ├── test_ner.py              # RoBERTa label mapping & entity deduplication
 │       ├── test_ocr.py              # Image preprocessing, PDF extraction, extensions
 │       ├── test_pii_redaction.py    # Aadhaar, PAN, Luhn validation & masking
-│       └── test_structured_extraction.py # Category classification & schema extraction
+│       ├── test_structured_extraction.py # Category classification & schema extraction
+│       ├── test_security_isolation.py  # Phase 1 — auth, ownership isolation, prod config guards
+│       ├── test_phase2_async.py     # Phase 2 — async lifecycle, retries, storage, RAG metadata
+│       ├── test_phase3_pipeline.py  # Phase 3 — staged pipeline, redaction, quality, validation
+│       └── test_stabilization.py    # Production stabilization acceptance suite (32 tests)
 │
 ├── frontend/
 │   ├── .env.example
@@ -231,7 +260,8 @@ DocIntel-AI/
 - **Python 3.11+** installed and added to `PATH`
 - **Node.js 18+** & `npm`
 - *(Optional)* **Tesseract OCR for Windows**: [UB-Mannheim/tesseract/wiki](https://github.com/UB-Mannheim/tesseract/wiki) (Defaults to `C:\Program Files\Tesseract-OCR\tesseract.exe`)
-- *(Optional)* **MongoDB 7.0**: If MongoDB is not running, the platform automatically uses `data/local_db.json` without any crash or manual intervention!
+- *(Optional)* **Redis 7**: Required only when `PROCESSING_QUEUE=celery`. With the default `local` queue mode, jobs run in-process and no broker is needed.
+- *(Optional, dev only)* **MongoDB 7.0**: In non-production, if MongoDB is not running and `ALLOW_LOCAL_FALLBACK=true`, the platform uses `data/local_db.json`. **Production always requires MongoDB** — the fallback is disabled and startup fails if it is not configured.
 
 ---
 
@@ -303,7 +333,7 @@ python scripts/test_pipeline.py
 cd backend
 python -m pytest tests/ -v
 ```
-**Result:** **23 / 23 Tests Passed** across all core modules:
+**Result:** **143 tests pass** (`143 passed` on the current codebase). The suite covers:
 - `test_auth.py`: Registration, duplicate prevention, login, JWT bearer validation, `/me` endpoint
 - `test_ocr.py`: PIL image preprocessing, PDF page extraction, extension verification
 - `test_ner.py`: RoBERTa token classification, label normalization (`PER` → `PERSON`), deduplication
@@ -311,42 +341,57 @@ python -m pytest tests/ -v
 - `test_structured_extraction.py`: Invoice, Contract, Identity classification and typed schema generation
 - `test_documents.py`: File ingestion, storage, retrieval, delete, and download
 - `test_dashboard_search.py`: Real-time metric calculation, substring query search, rule updates, RAG chat
+- `test_security_isolation.py`: Ownership/tenant isolation, production config guards, path-traversal defence
+- `test_phase2_async.py`: Async job lifecycle, atomic claiming, retries, storage keys, RAG metadata
+- `test_phase3_pipeline.py`: Staged pipeline behaviour, redaction modes, quality scoring, validation
+- `test_stabilization.py`: Production-stabilization acceptance suite (authorization, RAG, embeddings, chunking, Celery, config, dashboard, AI confidence, storage)
 
 ### Run End-to-End Pipeline Smoke Test
 ```powershell
 python scripts/test_pipeline.py
 ```
-**Result:** Successfully validates file upload → OCR text extraction → classification → RoBERTa NER → deterministic PII detection → validation & redaction → structured schema synthesis → MongoDB persistence → FAISS vector indexing & RAG retrieval.
+**Result:** Successfully validates file upload → OCR text extraction → text normalization → structure detection → classification → RoBERTa NER → deterministic PII detection → redaction → structured schema extraction → validation → quality assessment → embedding → MongoDB persistence → FAISS vector indexing & authorized RAG retrieval.
 
 ### Run Frontend Production Build
 ```powershell
 cd frontend
 npm run build
 ```
-**Result:** Compiles with **zero TypeScript errors** and generates optimized bundle in `frontend/dist/`.
+**Result:** Compiles with **zero TypeScript errors** (`npx tsc --noEmit` passes) and generates an optimized bundle in `frontend/dist/`.
 
 ---
 
 ## 🐳 Docker Multi-Container Stack
 
-Launch full containerized environment including MongoDB, FastAPI backend with Tesseract OCR, and Nginx-hosted React frontend:
+The Compose stack runs **five services**: MongoDB, Redis, the FastAPI backend, a Celery worker, and the Nginx-hosted React frontend.
+
+A strong `JWT_SECRET_KEY` **must** be supplied (the stack refuses to start without it):
 
 ```powershell
-docker-compose up --build
+$env:JWT_SECRET_KEY = "<a strong random value of at least 32 characters>"
+docker compose up --build
 ```
 - **Frontend Application:** [http://localhost:5173](http://localhost:5173)
 - **Backend API Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
-- **MongoDB:** `localhost:27017`
+- **MongoDB:** `localhost:27017` (bound to loopback only)
+- **Redis:** internal network only (not published to the host)
+
+`PROCESSING_QUEUE=celery` is set for the API and worker, so uploads are queued to Redis and processed out-of-band by the worker container.
 
 ---
 
 ## 🛡️ Security & Privacy Features
 
 1. **Zero Secret Exposure:** No API keys, database credentials, or secret keys exist in client-side code or Git history.
-2. **PII Redaction Before Vectorization:** Only masked, sanitized text chunks are embedded and stored in the FAISS index to prevent sensitive PII leakage through embeddings.
-3. **Anti-Hallucination RAG Guardrails:** The conversational AI assistant answers questions strictly using retrieved document context. When information is not present in indexed documents, it answers:
+2. **Centralized Authorization:** A single `authorization_service` is the source of truth for document access. A caller may read/modify a document only when it is theirs (`owner_id`) or belongs to their organization (`organization_id` — matched only when both sides are non-empty). Every document, search, dashboard, download and chat route enforces this.
+3. **Tenant-Isolated Vector Retrieval:** FAISS chunks carry `owner_id` / `organization_id` metadata and are filtered **at retrieval time**. `top_k` counts only *authorized* results, so a caller can never receive another tenant's chunks. Chat additionally authorizes the target document against MongoDB before answering.
+4. **PII Redaction Before Vectorization:** Only masked, sanitized text chunks are embedded and stored in the FAISS index to prevent sensitive PII leakage through embeddings.
+5. **Prompt-Injection Defence:** Retrieved context is neutralized before it reaches the synthesis prompt, and the system instructions forbid following instructions embedded inside documents.
+6. **Anti-Hallucination RAG Guardrails:** The conversational AI assistant answers questions strictly using retrieved document context, and only reports a confidence value derived from real retrieval scores (never fabricated). When information is not present in indexed documents, it answers:
    > *"I couldn't find that information in the available documents."*
-4. **Algorithmic Checksums:** Validates 12-digit Indian Aadhaar numbers using the Verhoeff multiplication table and credit cards using the Luhn MOD-10 algorithm.
+7. **Algorithmic Checksums:** Validates 12-digit Indian Aadhaar numbers using the Verhoeff multiplication table and credit cards using the Luhn MOD-10 algorithm.
+8. **Deterministic by Design:** The embedding fallback is a SHA-256-derived deterministic projection (never Python's salted `hash()`), so the same text always yields the same vector across processes and restarts.
+9. **Fail-Closed Production Guards:** Production startup is refused unless a strong JWT secret, explicit CORS allow-list, Celery queue, real MongoDB/Redis endpoints, and the local storage backend are configured. Unimplemented S3 storage is explicitly refused rather than silently degraded.
 
 ---
 
@@ -356,7 +401,7 @@ docker-compose up --build
 2. **Upload & Process:** Go to **"Process Document"**, drag & drop `data/sample_documents/sample_invoice.pdf`, and click **"Start Extraction & Redaction"**.
 3. **Live Pipeline Visualizer:** Watch the interactive timeline progress across **Upload → OCR → Classification → RoBERTa NER → PII Detection → Redaction → Structured Extraction → FAISS Storage**.
 4. **Inspect Tabs:** Review the synthesized **Structured Schema**, extracted **Entities**, detected **Masked PII**, and side-by-side **Raw vs. Redacted Text**.
-5. **Dashboard Telemetry:** Return to **Dashboard** to see live updated metrics: Total Processed, Extraction Accuracy, Protected Entities, and Calculated Time Saved.
+5. **Dashboard Telemetry:** Return to **Dashboard** to see live updated metrics: Total Processed, Avg. Extraction Confidence, Protected Entities, and Calculated Time Saved.
 6. **Ask AI Assistant:** Navigate to **"AI Assistant"** and ask:
    - *"What is the invoice amount?"*
    - *"Who is the vendor?"*

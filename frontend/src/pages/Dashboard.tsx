@@ -105,12 +105,12 @@ export const Dashboard: React.FC = () => {
           trend="+100% automated"
         />
         <StatCard
-          title="Extraction Accuracy"
-          value={`${stats?.extraction_accuracy || 0}%`}
-          subtitle="RoBERTa & rule model score"
+          title="Avg. Extraction Confidence"
+          value={`${stats?.average_extraction_confidence || 0}%`}
+          subtitle="Mean model/rule confidence (not accuracy)"
           icon={Target}
           color="emerald"
-          trend="Enterprise Grade"
+          trend="Confidence score"
         />
         <StatCard
           title="Protected Entities"

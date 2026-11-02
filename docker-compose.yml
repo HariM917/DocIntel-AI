@@ -28,6 +28,10 @@ x-backend-common: &backend-common
   volumes:
     - ./data:/data
     - ./backend/uploads:/app/uploads
+    # Persistent HuggingFace model cache. Without this, every container
+    # recreation re-downloads the NER (RoBERTa) and embedding (MiniLM) models
+    # (~1.5 GB) because they otherwise live only in the container filesystem.
+    - hf_cache:/root/.cache/huggingface
   networks:
     - docintel-net
 
@@ -90,6 +94,7 @@ services:
 volumes:
   mongo_data:
   redis_data:
+  hf_cache:
 
 networks:
   docintel-net:

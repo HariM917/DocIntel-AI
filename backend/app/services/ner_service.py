@@ -21,6 +21,11 @@ LABEL_MAPPING = {
 }
 
 
+# Valid entity types the schema guarantees. Anything else is rejected rather
+# than propagated to downstream consumers (§25).
+VALID_ENTITY_TYPES = {"PERSON", "ORGANIZATION", "LOCATION", "MISCELLANEOUS", "DATE", "MONEY"}
+
+
 class NERService:
     """Named Entity Recognition using fine-tuned RoBERTa token classification pipeline with robust fallback."""
 
@@ -95,13 +100,48 @@ class NERService:
                     char_offset += len(chunk)
 
                 if entities:
-                    return self._enrich(self._deduplicate_entities(entities), source="roberta", calibrated=True)
+                    validated = self.validate_entities(entities, text)
+                    if validated:
+                        return self._enrich(self._deduplicate_entities(validated), source="roberta", calibrated=True)
             except Exception as e:
                 logger.error(f"Error during RoBERTa NER pipeline execution: {e}")
 
         # Fallback heuristic / pattern-based NER
-        fallback_entities = self._fallback_ner(text)
+        fallback_entities = self.validate_entities(self._fallback_ner(text), text)
         return self._enrich(self._deduplicate_entities(fallback_entities), source="rule", calibrated=False)
+
+    @staticmethod
+    def validate_entities(entities: List[Dict[str, Any]], text: str) -> List[Dict[str, Any]]:
+        """Rejects malformed entities before they reach downstream consumers (§25).
+
+        An entity is only kept when it has non-empty ``text``, integer
+        ``start``/``end`` offsets with ``0 <= start < end <= len(text)``, a
+        recognised ``type`` and (when present) a confidence that is a real
+        number in ``[0, 1]``. Invalid confidence is treated as malformed rather
+        than being silently invented, so no fabricated value can appear.
+        """
+        text_len = len(text or "")
+        valid: List[Dict[str, Any]] = []
+        for ent in entities or []:
+            if not isinstance(ent, dict):
+                continue
+            ent_text = ent.get("text")
+            if not isinstance(ent_text, str) or not ent_text.strip():
+                continue
+            start, end = ent.get("start"), ent.get("end")
+            if not isinstance(start, int) or not isinstance(end, int):
+                continue
+            if start < 0 or end > text_len or start >= end:
+                continue
+            if ent.get("type") not in VALID_ENTITY_TYPES:
+                continue
+            conf = ent.get("confidence")
+            if conf is not None and not (
+                isinstance(conf, (int, float)) and 0.0 <= float(conf) <= 1.0
+            ):
+                continue
+            valid.append(ent)
+        return valid
 
     def _enrich(self, entities: List[Dict[str, Any]], source: str, calibrated: bool) -> List[Dict[str, Any]]:
         """Adds Phase 3 metadata to each entity.
@@ -194,7 +234,9 @@ class NERService:
     def _deduplicate_entities(self, entities: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         seen = set()
         deduped = []
-        for ent in sorted(entities, key=lambda x: x["confidence"], reverse=True):
+        # Confidence may legitimately be None (no real model probability), so
+        # sort defensively instead of assuming every entity carries a float.
+        for ent in sorted(entities, key=lambda x: x.get("confidence") or 0.0, reverse=True):
             key = (ent["text"].lower(), ent["type"])
             if key not in seen:
                 seen.add(key)

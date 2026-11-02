@@ -14,7 +14,9 @@ class RecentDocumentItem(BaseModel):
 
 class DashboardStats(BaseModel):
     total_processed: int
-    extraction_accuracy: float
+    # Mean model/rule extraction confidence for the caller's documents (0-100).
+    # This is a confidence aggregate, NOT a measured accuracy metric (§20).
+    average_extraction_confidence: float
     protected_entities: int
     time_saved: str
     type_distribution: Dict[str, int]

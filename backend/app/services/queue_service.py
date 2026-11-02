@@ -40,6 +40,14 @@ def enqueue_document_processing(
         logger.info("Enqueued document processing on Celery broker.")
         return "celery"
 
+    # §12 — the local (in-process) queue is a development-only convenience.
+    # Production must never execute long-running AI processing inside the API.
+    if settings.ENVIRONMENT in ("production", "prod"):
+        raise RuntimeError(
+            "Local document processing is not permitted in production; "
+            "configure PROCESSING_QUEUE=celery with a running Celery worker."
+        )
+
     if background_tasks is not None:
         background_tasks.add_task(_run_local, document_id, job_id)
         return "local"

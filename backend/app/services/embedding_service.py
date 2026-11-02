@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import numpy as np
 from typing import List, Dict, Any, Optional
@@ -5,6 +6,10 @@ from typing import List, Dict, Any, Optional
 from app.config import settings
 
 logger = logging.getLogger("docintel.embedding")
+
+# Version tag for the deterministic fallback vectorizer. Bumped if the fallback
+# algorithm changes, so previously-indexed chunks can be identified for rebuild.
+FALLBACK_EMBEDDING_VERSION = "1"
 
 
 class EmbeddingService:
@@ -15,6 +20,7 @@ class EmbeddingService:
         self.model = None
         self._initialized = False
         self._dimension = 384  # Default dimension for all-MiniLM-L6-v2
+        self._backend = "sentence-transformers"
 
     def _load_model(self):
         if self._initialized:
@@ -25,12 +31,14 @@ class EmbeddingService:
             self.model = SentenceTransformer(self.model_name)
             self._dimension = self.model.get_sentence_embedding_dimension()
             self._initialized = True
+            self._backend = "sentence-transformers"
             logger.info(f"Embedding model '{self.model_name}' loaded. Dimension: {self._dimension}")
         except Exception as e:
             logger.warning(f"Could not load SentenceTransformer model ({e}). Using deterministic dense vectorizer fallback.")
             self.model = None
             self._initialized = True
             self._dimension = 384
+            self._backend = "deterministic-fallback"
 
     @property
     def dimension(self) -> int:
@@ -39,8 +47,22 @@ class EmbeddingService:
         return self._dimension
 
     @property
+    def backend(self) -> str:
+        """Which embedding backend is active: 'sentence-transformers' or 'deterministic-fallback'."""
+        if not self._initialized:
+            self._load_model()
+        return self._backend
+
+    @property
     def model_version(self) -> str:
-        """Generation tag for the current embedding model (Step 20)."""
+        """Generation tag for the current embedding model (Step 20, §9).
+
+        The tag distinguishes the real model generation from the deterministic
+        fallback so mixed/incompatible vectors are never silently treated as
+        equivalent.
+        """
+        if self.backend == "deterministic-fallback":
+            return f"{settings.EMBEDDING_MODEL_VERSION}-fallback{FALLBACK_EMBEDDING_VERSION}"
         return settings.EMBEDDING_MODEL_VERSION
 
     @staticmethod
@@ -87,8 +109,14 @@ class EmbeddingService:
             if not para or para == "--- Page Break ---":
                 continue
 
-            # A heading labels the following content; it is not emitted on its own.
+            # A heading labels the following content; it is not emitted on its
+            # own. A new heading closes the current section, so the accumulated
+            # chunk is flushed first: chunk A belongs to section A, chunk B to
+            # section B (no cross-section merging).
             if self._is_heading(para):
+                if current_chunk:
+                    _emit(current_chunk)
+                    current_chunk = ""
                 current_section = para
                 continue
 
@@ -146,14 +174,21 @@ class EmbeddingService:
         return arr[0] if len(arr) > 0 else np.zeros(self.dimension, dtype=np.float32)
 
     def _deterministic_fallback_embeddings(self, texts: List[str]) -> np.ndarray:
-        """Fallback deterministic token frequency projection into unit hypersphere."""
+        """Deterministic token-frequency projection into the unit hypersphere.
+
+        Uses a cryptographic hash (SHA-256) to map tokens to dimensions rather
+        than Python's built-in ``hash()``, which is randomized per process
+        (PYTHONHASHSEED). The result is therefore identical across processes,
+        restarts and machines: the same input always yields the same vector at a
+        fixed dimension. See ``FALLBACK_EMBEDDING_VERSION``.
+        """
+        dim = self._dimension
         vectors = []
         for text in texts:
-            vec = np.zeros(self._dimension, dtype=np.float32)
-            words = text.lower().split()
-            for w in words:
-                # Hash word to dimension index
-                idx = hash(w) % self._dimension
+            vec = np.zeros(dim, dtype=np.float32)
+            for w in text.lower().split():
+                digest = hashlib.sha256(w.encode("utf-8")).digest()
+                idx = int.from_bytes(digest[:8], "big") % dim
                 vec[idx] += 1.0
             norm = np.linalg.norm(vec)
             if norm > 0:

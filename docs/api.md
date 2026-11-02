@@ -134,7 +134,7 @@ ReDoc UI: `http://localhost:8000/redoc`
 ```json
 {
   "total_processed": 14,
-  "extraction_accuracy": 96.2,
+  "average_extraction_confidence": 96.2,
   "protected_entities": 48,
   "time_saved": "1.4 hrs",
   "type_distribution": { "Invoice": 6, "Contract": 4, "Identity": 2, "Application": 2 },

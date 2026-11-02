@@ -67,17 +67,14 @@ def is_user_active(user: dict) -> bool:
 
 
 def authorization_filter(user: dict) -> dict:
-    """Builds a MongoDB filter restricting documents to those owned by ``user``.
+    """Builds a MongoDB filter restricting documents to those ``user`` may access.
 
-    Matches the stable ``owner_id`` when present, and falls back to the legacy
-    ``owner`` (email) field so that documents created before owner_id existed
-    remain reachable by their owner without a data migration.
+    Delegates to the centralized authorization policy so that owner, legacy
+    owner-email and organization-membership rules are defined in exactly one
+    place (see :mod:`app.services.authorization_service`).
     """
-    clauses = [{"owner": user.get("email")}]
-    user_id = get_user_id(user)
-    if user_id:
-        clauses.append({"owner_id": user_id})
-    return {"$or": clauses}
+    from app.services.authorization_service import document_access_filter
+    return document_access_filter(user)
 
 
 async def _load_user_by_subject(subject: str) -> Optional[dict]:
@@ -130,15 +127,9 @@ async def get_current_active_user(current_user: dict = Depends(get_current_user)
 async def get_authorized_document(document_id: str, current_user: dict) -> dict:
     """Fetches a document only if the authenticated user is authorized to access it.
 
-    Raises 404 (never leaking existence of another user's document) when the
-    document does not exist or is not owned by the caller.
+    Delegates to the centralized authorization helper. Raises 404 (never
+    leaking existence of another user's document) when the document does not
+    exist or the caller is not authorized.
     """
-    from app.database import db
-    query = {"$and": [{"document_id": document_id}, authorization_filter(current_user)]}
-    doc = await db.documents.find_one(query)
-    if not doc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Document '{document_id}' not found",
-        )
-    return doc
+    from app.services.authorization_service import authorize_document_access
+    return await authorize_document_access(document_id, current_user)

@@ -6,6 +6,15 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+# The suite exercises application logic against the deterministic local fallback
+# store, and test bodies call `asyncio.run(...)` on the shared db manager many
+# times. That is only safe while no live Motor client is bound to a specific
+# event loop, so pin MongoDB to an unreachable endpoint: the local fallback is
+# then selected regardless of whether a developer happens to have MongoDB
+# running (e.g. via docker compose). Must be set before `app.config` is imported.
+os.environ["MONGODB_URI"] = "mongodb://127.0.0.1:1"
+os.environ["ALLOW_LOCAL_FALLBACK"] = "true"
+
 # Ensure backend root is in sys.path
 TESTS_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = TESTS_DIR.parent
@@ -23,8 +32,16 @@ TEST_PASSWORD = "SecurePassword123!"
 def setup_test_environment():
     """Initializes test environment and default rules."""
     import asyncio
-    asyncio.run(db.connect())
-    asyncio.run(ensure_default_rules())
+
+    async def _initialize() -> None:
+        await db.connect()
+        await ensure_default_rules()
+
+    # Both calls share a single event loop. Running them via two separate
+    # `asyncio.run(...)` calls closed the first loop while the shared db manager
+    # still referenced it, which surfaced as "Event loop is closed" (or a
+    # different-loop error) as soon as a real MongoDB was reachable.
+    asyncio.run(_initialize())
     yield
 
 

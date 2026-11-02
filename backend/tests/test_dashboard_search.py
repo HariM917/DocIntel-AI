@@ -8,7 +8,8 @@ def test_dashboard_stats(client: TestClient, auth_headers):
     assert res.status_code == 200
     data = res.json()
     assert "total_processed" in data
-    assert "extraction_accuracy" in data
+    assert "average_extraction_confidence" in data
+    assert "extraction_accuracy" not in data
     assert "protected_entities" in data
     assert "time_saved" in data
     assert "type_distribution" in data

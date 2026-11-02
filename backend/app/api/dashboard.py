@@ -35,7 +35,7 @@ async def _build_recent_items(all_docs: List[Dict[str, Any]]) -> List[RecentDocu
             extracted_vendor_or_name=vendor_or_name,
             created_at=d.get("created_at", ""),
             status=d.get("status", "Verified"),
-            confidence=round(d.get("confidence", 0.90) * 100, 1),
+            confidence=round(float(d.get("confidence", 0.0) or 0.0) * 100, 1),
         ))
     return recent_items
 
@@ -51,7 +51,7 @@ async def _compute_stats(current_user: dict) -> Dict[str, Any]:
     if total_processed == 0:
         return {
             "total_processed": 0,
-            "extraction_accuracy": 0.0,
+            "average_extraction_confidence": 0.0,
             "protected_entities": 0,
             "time_saved": "0 hrs",
             "type_distribution": {},
@@ -59,9 +59,14 @@ async def _compute_stats(current_user: dict) -> Dict[str, Any]:
             "recent_documents": [],
         }
 
-    # Extraction Accuracy
-    confidences = [d.get("confidence", 0.85) for d in all_docs if "confidence" in d]
-    avg_accuracy = round((sum(confidences) / len(confidences)) * 100.0, 1) if confidences else 95.0
+    # Mean extraction confidence (0-100). This is a confidence aggregate derived
+    # from per-document model/rule confidences -- it is deliberately NOT labelled
+    # "accuracy", which would imply a calibrated correctness measurement (§20).
+    confidences = [
+        float(d["confidence"]) for d in all_docs
+        if isinstance(d.get("confidence"), (int, float))
+    ]
+    avg_confidence = round((sum(confidences) / len(confidences)) * 100.0, 1) if confidences else 0.0
 
     # Protected Entities count
     total_protected = 0
@@ -94,7 +99,7 @@ async def _compute_stats(current_user: dict) -> Dict[str, Any]:
 
     return {
         "total_processed": total_processed,
-        "extraction_accuracy": avg_accuracy,
+        "average_extraction_confidence": avg_confidence,
         "protected_entities": total_protected,
         "time_saved": time_saved_str,
         "type_distribution": type_counts,

@@ -142,7 +142,8 @@ export interface RecentDocumentItem {
 
 export interface DashboardStats {
   total_processed: number;
-  extraction_accuracy: number;
+  // Mean extraction confidence (0-100). A confidence aggregate, not accuracy.
+  average_extraction_confidence: number;
   protected_entities: number;
   time_saved: string;
   type_distribution: Record<string, number>;
