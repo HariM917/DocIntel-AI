@@ -16,6 +16,10 @@ logger = logging.getLogger("docintel.rag")
 INDEX_FILE = VECTOR_INDEX_DIR / "faiss.index"
 METADATA_FILE = VECTOR_INDEX_DIR / "metadata.json"
 
+# Bumped whenever the FAISS metadata document shape changes.
+# Chunks lacking ownership metadata are treated as unsafe and are never served.
+METADATA_SCHEMA_VERSION = 2
+
 
 class LLMProviderInterface:
     """Abstract base for LLM generation backends."""
@@ -107,6 +111,7 @@ class RAGService:
                 self.index = faiss.read_index(str(INDEX_FILE))
                 with open(METADATA_FILE, "r", encoding="utf-8") as f:
                     self.metadata = json.load(f)
+                self._warn_on_legacy_metadata()
                 logger.info(f"Loaded FAISS index with {self.index.ntotal} vectors.")
             else:
                 self.index = faiss.IndexFlatIP(self.dimension)
@@ -116,6 +121,22 @@ class RAGService:
             logger.warning(f"Error loading FAISS index: {e}. Initializing fresh index.")
             self.index = faiss.IndexFlatIP(self.dimension)
             self.metadata = []
+
+    def _warn_on_legacy_metadata(self):
+        """Flags indexes created before ownership metadata existed.
+
+        Such chunks are excluded from retrieval (fail closed) until the index is
+        rebuilt by re-processing the documents. See the Phase 1 report for the
+        documented reindex procedure.
+        """
+        legacy = [m for m in self.metadata if not m.get("owner_id") and not m.get("owner")]
+        if legacy:
+            logger.warning(
+                "%d FAISS chunk(s) lack ownership metadata and will NOT be served. "
+                "Rebuild the vector index (delete data/vector_index and re-process documents) "
+                "to restore secure retrieval.",
+                len(legacy),
+            )
 
     def _save_index(self):
         try:
@@ -128,8 +149,21 @@ class RAGService:
         except Exception as e:
             logger.error(f"Error saving FAISS index: {e}")
 
-    def index_document(self, document_id: str, filename: str, document_type: str, text: str):
-        """Chunks text, computes embeddings, and appends to FAISS index."""
+    def index_document(
+        self,
+        document_id: str,
+        filename: str,
+        document_type: str,
+        text: str,
+        owner_id: Optional[str] = None,
+        owner_email: Optional[str] = None,
+        organization_id: Optional[str] = None,
+    ):
+        """Chunks text, computes embeddings, and appends to FAISS index.
+
+        Ownership metadata is stored alongside each chunk so retrieval can be
+        authorized before any context reaches the synthesis layer.
+        """
         if not text or not text.strip():
             return
 
@@ -158,6 +192,11 @@ class RAGService:
                 "document_type": document_type,
                 "chunk_id": chunk["chunk_id"],
                 "text": chunk["text"],
+                # Authorization metadata
+                "owner_id": owner_id,
+                "owner": owner_email,
+                "organization_id": organization_id,
+                "schema_version": METADATA_SCHEMA_VERSION,
             })
 
         self._save_index()
@@ -193,13 +232,46 @@ class RAGService:
         if save:
             self._save_index()
 
+    def _is_authorized(
+        self,
+        meta: Dict[str, Any],
+        owner_id: Optional[str],
+        owner_email: Optional[str],
+        organization_id: Optional[str],
+    ) -> bool:
+        """Determines whether a chunk may be returned to the current caller.
+
+        Fails closed: chunks that carry no ownership metadata at all (legacy
+        index entries) are never authorized.
+        """
+        chunk_owner_id = meta.get("owner_id")
+        chunk_owner_email = meta.get("owner")
+        chunk_org = meta.get("organization_id")
+
+        if not chunk_owner_id and not chunk_owner_email:
+            return False
+        if owner_id and chunk_owner_id and chunk_owner_id == owner_id:
+            return True
+        if owner_email and chunk_owner_email and chunk_owner_email == owner_email:
+            return True
+        if organization_id and chunk_org and chunk_org == organization_id:
+            return True
+        return False
+
     def search(
         self,
         query: str,
         top_k: int = 4,
-        document_id: Optional[str] = None
+        document_id: Optional[str] = None,
+        owner_id: Optional[str] = None,
+        owner_email: Optional[str] = None,
+        organization_id: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """Retrieves top-k most relevant document chunks for query."""
+        """Retrieves top-k most relevant chunks the caller is authorized to see.
+
+        Authorization filtering is applied before results are returned, so
+        unauthorized chunks never reach the synthesis layer.
+        """
         self._ensure_loaded()
         if not self.metadata or self.index is None or self.index.ntotal == 0:
             return []
@@ -207,8 +279,8 @@ class RAGService:
         query_vec = embedding_service.embed_query(query)
         query_vec = np.expand_dims(query_vec, axis=0)
 
-        # Retrieve a candidate pool
-        k_search = min(top_k * 3, self.index.ntotal)
+        # Retrieve a candidate pool wider than top_k to allow for filtered-out chunks.
+        k_search = min(max(top_k * 5, top_k), self.index.ntotal)
         distances, indices = self.index.search(query_vec, k_search)
 
         results = []
@@ -217,6 +289,8 @@ class RAGService:
                 continue
             meta = self.metadata[idx]
             if document_id and meta.get("document_id") != document_id:
+                continue
+            if not self._is_authorized(meta, owner_id, owner_email, organization_id):
                 continue
 
             results.append({
@@ -234,10 +308,20 @@ class RAGService:
     async def answer_question(
         self,
         query: str,
-        document_id: Optional[str] = None
+        document_id: Optional[str] = None,
+        owner_id: Optional[str] = None,
+        owner_email: Optional[str] = None,
+        organization_id: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Answers user question strictly using retrieved context."""
-        retrieved_chunks = self.search(query, top_k=3, document_id=document_id)
+        """Answers a question strictly using authorized retrieved context."""
+        retrieved_chunks = self.search(
+            query,
+            top_k=3,
+            document_id=document_id,
+            owner_id=owner_id,
+            owner_email=owner_email,
+            organization_id=organization_id,
+        )
 
         if not retrieved_chunks:
             return {

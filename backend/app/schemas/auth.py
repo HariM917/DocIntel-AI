@@ -19,6 +19,8 @@ class UserResponse(BaseModel):
     email: EmailStr
     full_name: str
     role: str = "user"
+    status: str = "active"
+    organization_id: Optional[str] = None
     created_at: str
 
 

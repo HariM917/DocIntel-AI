@@ -76,6 +76,15 @@ export const DocumentArchive: React.FC = () => {
     }
   };
 
+  const handleDownload = async (docId: string, filename: string) => {
+    try {
+      await documentApi.download(docId, filename);
+    } catch (err) {
+      console.error('Error downloading document:', err);
+      showToast('Failed to download document.', 'error');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -232,15 +241,13 @@ export const DocumentArchive: React.FC = () => {
                         >
                           <Eye className="w-4 h-4" />
                         </Link>
-                        <a
-                          href={documentApi.getDownloadUrl(doc.document_id)}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
+                          onClick={() => handleDownload(doc.document_id, doc.filename)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
                           title="Download Original"
                         >
                           <Download className="w-4 h-4" />
-                        </a>
+                        </button>
                         <button
                           onClick={() => handleDelete(doc.document_id)}
                           disabled={deletingId === doc.document_id}

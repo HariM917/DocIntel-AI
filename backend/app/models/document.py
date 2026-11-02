@@ -40,6 +40,8 @@ class DocumentModel(BaseModel):
     confidence: float
     pipeline_steps: List[Dict[str, Any]] = []
     owner: str = "anonymous"
+    owner_id: Optional[str] = None
+    organization_id: Optional[str] = None
     created_at: str
     updated_at: str
 

@@ -83,7 +83,23 @@ export const documentApi = {
   delete: async (documentId: string): Promise<void> => {
     await client.delete(`/documents/${documentId}`);
   },
-  getDownloadUrl: (documentId: string) => `${API_BASE_URL}/api/documents/${documentId}/download`,
+  // Authenticated download: the protected endpoint requires a Bearer token,
+  // which cannot be supplied by a plain <a href>, so the file is fetched as a
+  // blob and saved client-side.
+  download: async (documentId: string, filename?: string): Promise<void> => {
+    const res = await client.get(`/documents/${documentId}/download`, {
+      responseType: 'blob',
+    });
+    const blob = new Blob([res.data]);
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename || documentId;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
 };
 
 export const dashboardApi = {

@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Depends
 
 from app.database import db
 from app.schemas.security import SecurityRule, SecurityRuleUpdate
-from app.utils.security import get_current_user_optional
+from app.utils.security import get_current_active_user
 
 router = APIRouter(prefix="/security", tags=["Security Rules"])
 
@@ -73,7 +73,7 @@ async def ensure_default_rules():
 
 
 @router.get("/rules", response_model=List[SecurityRule])
-async def get_security_rules():
+async def get_security_rules(current_user: dict = Depends(get_current_active_user)):
     await ensure_default_rules()
     cursor = db.security_rules.find({})
     rules = await cursor.to_list(length=100)
@@ -87,7 +87,7 @@ async def get_security_rules():
 async def update_security_rule(
     rule_id: str,
     update_data: SecurityRuleUpdate,
-    user: dict = Depends(get_current_user_optional),
+    current_user: dict = Depends(get_current_active_user),
 ):
     await ensure_default_rules()
     existing = await db.security_rules.find_one({"rule_id": rule_id})

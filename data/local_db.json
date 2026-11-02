@@ -26,6 +26,396 @@
       "created_at": "2026-09-04T17:05:20.847943",
       "updated_at": "2026-09-04T17:05:20.847943",
       "_id": "users_3_1788521722"
+    },
+    {
+      "user_id": "40580d4527764aaea6d1ef44c3d86dbe",
+      "email": "test_user_1793628882@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$qUAX1RHNErKTmA4I4VaRxe.VJ775yaZd8MJlmOjcGHZtHCgbZP8F.",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:14:42.150885",
+      "updated_at": "2026-11-02T14:14:42.150885",
+      "_id": "users_4_1793609082"
+    },
+    {
+      "user_id": "72dd6a11f68a416196ba7e463f9c3503",
+      "email": "suspended_faaca0ed1ee5@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$nRqguJcjXuOOPPVqehDeOe9Ig0QL2jupmZ.0iaOwqeAXvraffqhXG",
+      "role": "user",
+      "status": "suspended",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:09.368883",
+      "updated_at": "2026-11-02T14:15:09.368883",
+      "_id": "users_5_1793609109"
+    },
+    {
+      "user_id": "08788320ec75461cbe40f8cb84797a98",
+      "email": "plainuser_8f45452a1709@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$32gOAbhPcNxdwj7tuyEdjOXL/0ySAeo0BJFghAoI/ZYq9ijUNc7JS",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:11.170978",
+      "updated_at": "2026-11-02T14:15:11.170978",
+      "_id": "users_6_1793609111"
+    },
+    {
+      "user_id": "341c250d78d54228af614ac5b8f067fd",
+      "email": "owner_3f9df4dd1173@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$kbkBX.IfhHSgZsSiBrXbv.gPwvuFLCNP9y1uKbd2z9YDjUTU/GYay",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:13.436631",
+      "updated_at": "2026-11-02T14:15:13.436631",
+      "_id": "users_7_1793609113"
+    },
+    {
+      "user_id": "d850e5f6d35c47d0b1b23920ee6bd75e",
+      "email": "intruder_e1ba6b3360f8@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$xFeYXFQ6x0C1MiaA4zKJOOpZoFWSvVrOuyGfyAyR/CQVCYJHSZKUe",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:13.672587",
+      "updated_at": "2026-11-02T14:15:13.672587",
+      "_id": "users_8_1793609113"
+    },
+    {
+      "user_id": "d0e028c0fcec42ae8975e7d6cedf57ac",
+      "email": "searchowner_c09326555253@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$7qmHDzRtTFLp9/iAQmnSg.RE8GJXt6wWASXlE2G2rFd9.eeHHBarK",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:17.899788",
+      "updated_at": "2026-11-02T14:15:17.899788",
+      "_id": "users_9_1793609118"
+    },
+    {
+      "user_id": "2f4fcfb468d34aeaac7a0c6eeb65e795",
+      "email": "searchintruder_f72b03326887@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$03pi3Pxwyf17TcUR7tM6temfKzD6gTYt..rNhYWB.X9d7B8.Tprnm",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:18.133873",
+      "updated_at": "2026-11-02T14:15:18.133873",
+      "_id": "users_10_1793609118"
+    },
+    {
+      "user_id": "3c4a2712d452445d8db85ef3a37b1859",
+      "email": "dashowner_de029d3967ae@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$9bmAsfBa2CiJAvAn1MvxXOxQwf8biASLIO.ZyF1F2TkxrvaOvaBuW",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:20.213627",
+      "updated_at": "2026-11-02T14:15:20.213627",
+      "_id": "users_11_1793609120"
+    },
+    {
+      "user_id": "5c63bc71baa34e8fbeeaad7ff1f72666",
+      "email": "dashintruder_45a25e8d5d25@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$5VXw/4IE3oKWFXFpuEbO2OGbK2BRz1AYfuq/.9VGfyOM1ejcWRoyy",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:20.442849",
+      "updated_at": "2026-11-02T14:15:20.442849",
+      "_id": "users_12_1793609120"
+    },
+    {
+      "user_id": "4ae7e0ecf6354242bc8b520714ebec64",
+      "email": "chatowner_be5de360dc79@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$iCE1.KOeeNaJQ/q9gA.OheAAGh4L.q2YkWnvmgQeJfOYzbY6cJfnu",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:23.001210",
+      "updated_at": "2026-11-02T14:15:23.001210",
+      "_id": "users_13_1793609123"
+    },
+    {
+      "user_id": "2e0aa268cc404cd2b73dd25e7495f2a5",
+      "email": "chatintruder_660a485682b9@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$pQNvXROs0l.n2fhTrTQcA.9eTXat5q0XKmOPVid87aSAXggVFRwCm",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:23.213835",
+      "updated_at": "2026-11-02T14:15:23.213835",
+      "_id": "users_14_1793609123"
+    },
+    {
+      "user_id": "872e7862d3e54fada04299faee675cae",
+      "email": "test_user_1793628940@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$.OFybzvjr/CcA5LW63X5xOqeUSOJouqy2kg2RdpQt0yhApq3MNSie",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:40.184454",
+      "updated_at": "2026-11-02T14:15:40.184454",
+      "_id": "users_15_1793609140"
+    },
+    {
+      "user_id": "232229b6e4904eed805a2c83c21bfd5d",
+      "email": "dashboard_3eade8069207@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$euWpcOkInvsymh1RoWS1A.VBnwFlcGQ9WeBYtWgtBwlJecSoFKw/C",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:42.924483",
+      "updated_at": "2026-11-02T14:15:42.924483",
+      "_id": "users_16_1793609143"
+    },
+    {
+      "user_id": "f427329b3f7b4607aac3fa0481e5d74e",
+      "email": "searcher_d0912d60e4e1@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$M39w5yU0qjACvKmAmr3J9u3sb552YzK7sr.4j.o4S/cemPNmKJqb.",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:46.213415",
+      "updated_at": "2026-11-02T14:15:46.213415",
+      "_id": "users_17_1793609146"
+    },
+    {
+      "user_id": "3e91e15a49594248a4a568df5200e6b8",
+      "email": "rules_b818c21b171a@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$seYeawc/CFwJcyjfT8eh4eUWopEFOwoQOtANeWGM8A4SCm0OQEfwW",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:50.013460",
+      "updated_at": "2026-11-02T14:15:50.013460",
+      "_id": "users_18_1793609150"
+    },
+    {
+      "user_id": "3b6318376c6e4714a03fb1c77351dc2d",
+      "email": "chatter_90e010b072d2@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$yKaAczMP75u2tL46AnHu0.bkeFpnTJB55jGx2DyV4isSl67xxYAmi",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:15:54.360767",
+      "updated_at": "2026-11-02T14:15:54.360767",
+      "_id": "users_19_1793609154"
+    },
+    {
+      "user_id": "1b36e4f1cd734e589ced0c5f603a96b0",
+      "email": "uploader_4b1c2c0812d1@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$G3h.fQ.O4iErBI9w52cNi.oW3.k7AWym57nfk2v5ihgyIH6pO.MGe",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:14.512112",
+      "updated_at": "2026-11-02T14:20:14.512112",
+      "_id": "users_20_1793609414"
+    },
+    {
+      "user_id": "8ea546bb3b1444ccb085278f377a940b",
+      "email": "badext_b4841312f5fe@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$Up.Va.BeHq4Cni1baBoTHeBq5A/jQfNJJa4ZpaMftRR5nxCmnY03i",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:19.426769",
+      "updated_at": "2026-11-02T14:20:19.426769",
+      "_id": "users_21_1793609419"
+    },
+    {
+      "user_id": "9aaa1b5a70274d80b2b432cf2a710f28",
+      "email": "suspended_6ac90c9a84e1@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$3QW8GXJLeMw0.SAwVMY31.sLtIM8lAqZa3yi3NzuXs6nfGQjiadlW",
+      "role": "user",
+      "status": "suspended",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:44.952174",
+      "updated_at": "2026-11-02T14:20:44.952174",
+      "_id": "users_22_1793609445"
+    },
+    {
+      "user_id": "66ee537af49a49db975641e6c2e2e578",
+      "email": "plainuser_7f8ba0f56e89@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$jYv.0jQavgO2sU1N6r9fHen5PoZuJm6zITXBBTzfyqLmF694qT0X2",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:46.765596",
+      "updated_at": "2026-11-02T14:20:46.765596",
+      "_id": "users_23_1793609447"
+    },
+    {
+      "user_id": "5fe857b19d3c4ac6888ecbf461bad957",
+      "email": "owner_2f9a72f2fded@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$CpyZbcN5e1rtF/eYpPMCgOGvaKSdb3wz1jlnaKwDckqzG/KAAZsUi",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:48.552905",
+      "updated_at": "2026-11-02T14:20:48.552905",
+      "_id": "users_24_1793609448"
+    },
+    {
+      "user_id": "6525a112a74c40ca8ddab9ee1388c318",
+      "email": "intruder_07a4ef97ad7f@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$0MnSFnT1QYJ312xGwVZJUevNVzUiUZGyFkBPyePr941WcTTpDQ3cS",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:48.808574",
+      "updated_at": "2026-11-02T14:20:48.808574",
+      "_id": "users_25_1793609449"
+    },
+    {
+      "user_id": "c49ab38a9ce54adb9d3cee9a8ccccf6c",
+      "email": "searchowner_c6ad8c48f27b@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$A1c9v9NTQT264MY5aYmHz.5ZYWzRyxOAA7L0vo21kXd.M8UWpxzGy",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:51.043259",
+      "updated_at": "2026-11-02T14:20:51.043259",
+      "_id": "users_26_1793609451"
+    },
+    {
+      "user_id": "c8a0828747864bf48ad43725b3f8f011",
+      "email": "searchintruder_c16e9fe6718c@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$JetiHXPoVrEdJP68bijt4etcVyuZPngxDiaHb6C0gYRTBzUA7Ip/K",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:51.327623",
+      "updated_at": "2026-11-02T14:20:51.327623",
+      "_id": "users_27_1793609451"
+    },
+    {
+      "user_id": "c8e7c62c1beb4e82b5186c11bcb13d04",
+      "email": "dashowner_8baa542f761a@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$lVaW.cIp13d0iE2ifsoUCuKeg0MShIUsl5GFMs4fK.4iHB/tATfUm",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:53.590097",
+      "updated_at": "2026-11-02T14:20:53.590097",
+      "_id": "users_28_1793609453"
+    },
+    {
+      "user_id": "a33ab1db8d5d4456b2bac912d1326109",
+      "email": "dashintruder_260ed368787e@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$bnLP/RphVi0HpbxJgstqcOlpXUeW1DhaKzjjzJC4X993jLP.8.Key",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:53.877680",
+      "updated_at": "2026-11-02T14:20:53.877680",
+      "_id": "users_29_1793609454"
+    },
+    {
+      "user_id": "f0c249536bcc4519a5bdd2951de191f7",
+      "email": "chatowner_ab20d865343d@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$9w.mz0inmUn8TbdIpy20luFqvCbcjx0gdoAQCgCpl0WaAijP9zUfK",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:56.622116",
+      "updated_at": "2026-11-02T14:20:56.622116",
+      "_id": "users_30_1793609456"
+    },
+    {
+      "user_id": "13c25e6e15904eb6b22c6a69acff0126",
+      "email": "chatintruder_1cc482652751@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$Ylahg/x/uEnCyZgdZIjrr.n.scpacuwCz/LHf78Tl8i3Mg/Nlq63C",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:20:56.896520",
+      "updated_at": "2026-11-02T14:20:56.896520",
+      "_id": "users_31_1793609457"
+    },
+    {
+      "user_id": "b632126b90ca4bb8a0d428db24e8960d",
+      "email": "suspended_b9cb9d642a19@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$DAttvFZizrescKOeVkW.DuMpflahXfpvWpsby7wXIKi2Lvhj7iqj2",
+      "role": "user",
+      "status": "suspended",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:22:04.989227",
+      "updated_at": "2026-11-02T14:22:04.989227",
+      "_id": "users_32_1793609525"
+    },
+    {
+      "user_id": "8dd6611e7f244e989acadd287c79d8e3",
+      "email": "plainuser_bcd191bfc1c6@docintel.ai",
+      "full_name": "Test User",
+      "password_hash": "$2b$12$jH36to9dJ0c7kNPhLMTYO.BeKJyK7AiY6IghBaJTrnELA6BBsUNG.",
+      "role": "user",
+      "status": "active",
+      "organization_id": null,
+      "is_active": true,
+      "created_at": "2026-11-02T14:22:07.306236",
+      "updated_at": "2026-11-02T14:22:07.306236",
+      "_id": "users_33_1793609527"
     }
   ],
   "security_rules": [
@@ -37,7 +427,7 @@
       "description": "Masks 12-digit Indian Aadhaar numbers to show only the last 4 digits (e.g. XXXX XXXX 9012).",
       "mask_pattern": "XXXX XXXX {last4}",
       "created_at": "2025-01-01T00:00:00",
-      "updated_at": "2026-09-04T17:05:32.441718",
+      "updated_at": "2026-11-02T14:15:50.271293",
       "_id": "security_rules_1_1788412250"
     },
     {
@@ -1958,6 +2348,717 @@
       "created_at": "2026-09-04T17:06:21.563901",
       "updated_at": "2026-09-04T17:06:21.563901",
       "_id": "documents_7_1788521781"
+    },
+    {
+      "document_id": "DOC-7B0F69",
+      "filename": "isolated.png",
+      "file_type": ".png",
+      "file_size": 1063,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-7B0F69.png",
+      "document_type": "Other",
+      "classification_confidence": 0.5,
+      "status": "Verified",
+      "raw_text": "",
+      "redacted_text": "",
+      "entities": [],
+      "pii_entities": [],
+      "structured_data": {
+        "entity_summary": {
+          "persons": [],
+          "organizations": [],
+          "locations": []
+        },
+        "sensitive_counts": 0
+      },
+      "confidence": 0.675,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 0.5,
+          "details": "Stored 1063 bytes as DOC-7B0F69.png"
+        },
+        {
+          "name": "OCR",
+          "status": "warning",
+          "duration_ms": 1572.1,
+          "details": "Extracted 0 characters across 1 page(s) (conf: 0.85)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Classified as 'Other' with confidence 0.50"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Identified 0 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Detected 0 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.1,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Synthesized typed Other schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "owner_3f9df4dd1173@docintel.ai",
+      "owner_id": "341c250d78d54228af614ac5b8f067fd",
+      "organization_id": null,
+      "created_at": "2026-11-02T14:15:15.794698",
+      "updated_at": "2026-11-02T14:15:15.794698",
+      "_id": "documents_8_1793609115"
+    },
+    {
+      "document_id": "DOC-9872A8",
+      "filename": "isolated.png",
+      "file_type": ".png",
+      "file_size": 1063,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-9872A8.png",
+      "document_type": "Other",
+      "classification_confidence": 0.5,
+      "status": "Verified",
+      "raw_text": "",
+      "redacted_text": "",
+      "entities": [],
+      "pii_entities": [],
+      "structured_data": {
+        "entity_summary": {
+          "persons": [],
+          "organizations": [],
+          "locations": []
+        },
+        "sensitive_counts": 0
+      },
+      "confidence": 0.675,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 0.7,
+          "details": "Stored 1063 bytes as DOC-9872A8.png"
+        },
+        {
+          "name": "OCR",
+          "status": "warning",
+          "duration_ms": 233.3,
+          "details": "Extracted 0 characters across 1 page(s) (conf: 0.85)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Classified as 'Other' with confidence 0.50"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Identified 0 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Detected 0 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.1,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Synthesized typed Other schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "searchowner_c09326555253@docintel.ai",
+      "owner_id": "d0e028c0fcec42ae8975e7d6cedf57ac",
+      "organization_id": null,
+      "created_at": "2026-11-02T14:15:18.623058",
+      "updated_at": "2026-11-02T14:15:18.623058",
+      "_id": "documents_9_1793609118"
+    },
+    {
+      "document_id": "DOC-98D23C",
+      "filename": "isolated.png",
+      "file_type": ".png",
+      "file_size": 1063,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-98D23C.png",
+      "document_type": "Other",
+      "classification_confidence": 0.5,
+      "status": "Verified",
+      "raw_text": "",
+      "redacted_text": "",
+      "entities": [],
+      "pii_entities": [],
+      "structured_data": {
+        "entity_summary": {
+          "persons": [],
+          "organizations": [],
+          "locations": []
+        },
+        "sensitive_counts": 0
+      },
+      "confidence": 0.675,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 0.8,
+          "details": "Stored 1063 bytes as DOC-98D23C.png"
+        },
+        {
+          "name": "OCR",
+          "status": "warning",
+          "duration_ms": 236.8,
+          "details": "Extracted 0 characters across 1 page(s) (conf: 0.85)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Classified as 'Other' with confidence 0.50"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Identified 0 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Detected 0 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.1,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Synthesized typed Other schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "dashowner_de029d3967ae@docintel.ai",
+      "owner_id": "3c4a2712d452445d8db85ef3a37b1859",
+      "organization_id": null,
+      "created_at": "2026-11-02T14:15:20.915231",
+      "updated_at": "2026-11-02T14:15:20.915231",
+      "_id": "documents_10_1793609120"
+    },
+    {
+      "document_id": "DOC-6BD1A2",
+      "filename": "isolated.png",
+      "file_type": ".png",
+      "file_size": 1063,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-6BD1A2.png",
+      "document_type": "Other",
+      "classification_confidence": 0.5,
+      "status": "Verified",
+      "raw_text": "",
+      "redacted_text": "",
+      "entities": [],
+      "pii_entities": [],
+      "structured_data": {
+        "entity_summary": {
+          "persons": [],
+          "organizations": [],
+          "locations": []
+        },
+        "sensitive_counts": 0
+      },
+      "confidence": 0.675,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 0.9,
+          "details": "Stored 1063 bytes as DOC-6BD1A2.png"
+        },
+        {
+          "name": "OCR",
+          "status": "warning",
+          "duration_ms": 220.7,
+          "details": "Extracted 0 characters across 1 page(s) (conf: 0.85)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Classified as 'Other' with confidence 0.50"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Identified 0 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Detected 0 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Synthesized typed Other schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "chatowner_be5de360dc79@docintel.ai",
+      "owner_id": "4ae7e0ecf6354242bc8b520714ebec64",
+      "organization_id": null,
+      "created_at": "2026-11-02T14:15:23.657490",
+      "updated_at": "2026-11-02T14:15:23.657490",
+      "_id": "documents_11_1793609123"
+    },
+    {
+      "document_id": "DOC-9941DC",
+      "filename": "test_invoice.png",
+      "file_type": ".png",
+      "file_size": 1586,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-9941DC.png",
+      "document_type": "Other",
+      "classification_confidence": 0.5,
+      "status": "Verified",
+      "raw_text": "",
+      "redacted_text": "",
+      "entities": [],
+      "pii_entities": [],
+      "structured_data": {
+        "entity_summary": {
+          "persons": [],
+          "organizations": [],
+          "locations": []
+        },
+        "sensitive_counts": 0
+      },
+      "confidence": 0.675,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 1.2,
+          "details": "Stored 1586 bytes as DOC-9941DC.png"
+        },
+        {
+          "name": "OCR",
+          "status": "warning",
+          "duration_ms": 507.0,
+          "details": "Extracted 0 characters across 1 page(s) (conf: 0.85)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Classified as 'Other' with confidence 0.50"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Identified 0 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Detected 0 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.1,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Synthesized typed Other schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "uploader_4b1c2c0812d1@docintel.ai",
+      "owner_id": "1b36e4f1cd734e589ced0c5f603a96b0",
+      "organization_id": null,
+      "created_at": "2026-11-02T14:20:15.283589",
+      "updated_at": "2026-11-02T14:20:15.283589",
+      "_id": "documents_12_1793609415"
+    },
+    {
+      "document_id": "DOC-DF00E8",
+      "filename": "isolated.png",
+      "file_type": ".png",
+      "file_size": 1063,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-DF00E8.png",
+      "document_type": "Other",
+      "classification_confidence": 0.5,
+      "status": "Verified",
+      "raw_text": "",
+      "redacted_text": "",
+      "entities": [],
+      "pii_entities": [],
+      "structured_data": {
+        "entity_summary": {
+          "persons": [],
+          "organizations": [],
+          "locations": []
+        },
+        "sensitive_counts": 0
+      },
+      "confidence": 0.675,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 0.7,
+          "details": "Stored 1063 bytes as DOC-DF00E8.png"
+        },
+        {
+          "name": "OCR",
+          "status": "warning",
+          "duration_ms": 343.1,
+          "details": "Extracted 0 characters across 1 page(s) (conf: 0.85)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Classified as 'Other' with confidence 0.50"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Identified 0 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Detected 0 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.1,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Synthesized typed Other schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "owner_2f9a72f2fded@docintel.ai",
+      "owner_id": "5fe857b19d3c4ac6888ecbf461bad957",
+      "organization_id": null,
+      "created_at": "2026-11-02T14:20:49.430594",
+      "updated_at": "2026-11-02T14:20:49.430594",
+      "_id": "documents_13_1793609449"
+    },
+    {
+      "document_id": "DOC-68C0EB",
+      "filename": "isolated.png",
+      "file_type": ".png",
+      "file_size": 1063,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-68C0EB.png",
+      "document_type": "Other",
+      "classification_confidence": 0.5,
+      "status": "Verified",
+      "raw_text": "",
+      "redacted_text": "",
+      "entities": [],
+      "pii_entities": [],
+      "structured_data": {
+        "entity_summary": {
+          "persons": [],
+          "organizations": [],
+          "locations": []
+        },
+        "sensitive_counts": 0
+      },
+      "confidence": 0.675,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 0.7,
+          "details": "Stored 1063 bytes as DOC-68C0EB.png"
+        },
+        {
+          "name": "OCR",
+          "status": "warning",
+          "duration_ms": 341.0,
+          "details": "Extracted 0 characters across 1 page(s) (conf: 0.85)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Classified as 'Other' with confidence 0.50"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Identified 0 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Detected 0 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.1,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Synthesized typed Other schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "searchowner_c6ad8c48f27b@docintel.ai",
+      "owner_id": "c49ab38a9ce54adb9d3cee9a8ccccf6c",
+      "organization_id": null,
+      "created_at": "2026-11-02T14:20:51.976521",
+      "updated_at": "2026-11-02T14:20:51.976521",
+      "_id": "documents_14_1793609451"
+    },
+    {
+      "document_id": "DOC-135720",
+      "filename": "isolated.png",
+      "file_type": ".png",
+      "file_size": 1063,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-135720.png",
+      "document_type": "Other",
+      "classification_confidence": 0.5,
+      "status": "Verified",
+      "raw_text": "",
+      "redacted_text": "",
+      "entities": [],
+      "pii_entities": [],
+      "structured_data": {
+        "entity_summary": {
+          "persons": [],
+          "organizations": [],
+          "locations": []
+        },
+        "sensitive_counts": 0
+      },
+      "confidence": 0.675,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 0.8,
+          "details": "Stored 1063 bytes as DOC-135720.png"
+        },
+        {
+          "name": "OCR",
+          "status": "warning",
+          "duration_ms": 309.4,
+          "details": "Extracted 0 characters across 1 page(s) (conf: 0.85)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Classified as 'Other' with confidence 0.50"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Identified 0 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Detected 0 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.1,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Synthesized typed Other schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "dashowner_8baa542f761a@docintel.ai",
+      "owner_id": "c8e7c62c1beb4e82b5186c11bcb13d04",
+      "organization_id": null,
+      "created_at": "2026-11-02T14:20:54.497372",
+      "updated_at": "2026-11-02T14:20:54.497372",
+      "_id": "documents_15_1793609454"
+    },
+    {
+      "document_id": "DOC-990D05",
+      "filename": "isolated.png",
+      "file_type": ".png",
+      "file_size": 1063,
+      "file_path": "C:\\Users\\HARI\\OneDrive\\Desktop\\DocIntel-AI\\backend\\uploads\\DOC-990D05.png",
+      "document_type": "Other",
+      "classification_confidence": 0.5,
+      "status": "Verified",
+      "raw_text": "",
+      "redacted_text": "",
+      "entities": [],
+      "pii_entities": [],
+      "structured_data": {
+        "entity_summary": {
+          "persons": [],
+          "organizations": [],
+          "locations": []
+        },
+        "sensitive_counts": 0
+      },
+      "confidence": 0.675,
+      "pipeline_steps": [
+        {
+          "name": "UPLOAD",
+          "status": "completed",
+          "duration_ms": 0.7,
+          "details": "Stored 1063 bytes as DOC-990D05.png"
+        },
+        {
+          "name": "OCR",
+          "status": "warning",
+          "duration_ms": 323.2,
+          "details": "Extracted 0 characters across 1 page(s) (conf: 0.85)"
+        },
+        {
+          "name": "CLASSIFICATION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Classified as 'Other' with confidence 0.50"
+        },
+        {
+          "name": "RoBERTa NER",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Identified 0 named entities (Person, Org, Location)"
+        },
+        {
+          "name": "PII DETECTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Detected 0 PII items (Aadhaar, PAN, Emails, Phones, Financial)"
+        },
+        {
+          "name": "VALIDATION & REDACTION",
+          "status": "completed",
+          "duration_ms": 0.2,
+          "details": "Masked sensitive items based on 6 active security rules"
+        },
+        {
+          "name": "STRUCTURED EXTRACTION",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Synthesized typed Other schema"
+        },
+        {
+          "name": "INDEXING & STORAGE",
+          "status": "completed",
+          "duration_ms": 0.0,
+          "details": "Persisted to MongoDB collections and indexed in FAISS vector database"
+        }
+      ],
+      "owner": "chatowner_ab20d865343d@docintel.ai",
+      "owner_id": "f0c249536bcc4519a5bdd2951de191f7",
+      "organization_id": null,
+      "created_at": "2026-11-02T14:20:57.505673",
+      "updated_at": "2026-11-02T14:20:57.505673",
+      "_id": "documents_16_1793609457"
     }
   ],
   "processing_logs": [
@@ -2016,6 +3117,96 @@
       "status": "Verified",
       "timestamp": "2026-09-04T17:06:21.563901",
       "_id": "processing_logs_7_1788521781"
+    },
+    {
+      "document_id": "DOC-7B0F69",
+      "filename": "isolated.png",
+      "owner_id": "341c250d78d54228af614ac5b8f067fd",
+      "organization_id": null,
+      "total_duration_ms": 1617.2,
+      "status": "Verified",
+      "timestamp": "2026-11-02T14:15:15.794698",
+      "_id": "processing_logs_8_1793609115"
+    },
+    {
+      "document_id": "DOC-9872A8",
+      "filename": "isolated.png",
+      "owner_id": "d0e028c0fcec42ae8975e7d6cedf57ac",
+      "organization_id": null,
+      "total_duration_ms": 277.0,
+      "status": "Verified",
+      "timestamp": "2026-11-02T14:15:18.623058",
+      "_id": "processing_logs_9_1793609118"
+    },
+    {
+      "document_id": "DOC-98D23C",
+      "filename": "isolated.png",
+      "owner_id": "3c4a2712d452445d8db85ef3a37b1859",
+      "organization_id": null,
+      "total_duration_ms": 277.3,
+      "status": "Verified",
+      "timestamp": "2026-11-02T14:15:20.915231",
+      "_id": "processing_logs_10_1793609120"
+    },
+    {
+      "document_id": "DOC-6BD1A2",
+      "filename": "isolated.png",
+      "owner_id": "4ae7e0ecf6354242bc8b520714ebec64",
+      "organization_id": null,
+      "total_duration_ms": 249.2,
+      "status": "Verified",
+      "timestamp": "2026-11-02T14:15:23.657490",
+      "_id": "processing_logs_11_1793609123"
+    },
+    {
+      "document_id": "DOC-9941DC",
+      "filename": "test_invoice.png",
+      "owner_id": "1b36e4f1cd734e589ced0c5f603a96b0",
+      "organization_id": null,
+      "total_duration_ms": 550.3,
+      "status": "Verified",
+      "timestamp": "2026-11-02T14:20:15.283589",
+      "_id": "processing_logs_12_1793609415"
+    },
+    {
+      "document_id": "DOC-DF00E8",
+      "filename": "isolated.png",
+      "owner_id": "5fe857b19d3c4ac6888ecbf461bad957",
+      "organization_id": null,
+      "total_duration_ms": 387.7,
+      "status": "Verified",
+      "timestamp": "2026-11-02T14:20:49.430594",
+      "_id": "processing_logs_13_1793609449"
+    },
+    {
+      "document_id": "DOC-68C0EB",
+      "filename": "isolated.png",
+      "owner_id": "c49ab38a9ce54adb9d3cee9a8ccccf6c",
+      "organization_id": null,
+      "total_duration_ms": 388.4,
+      "status": "Verified",
+      "timestamp": "2026-11-02T14:20:51.976521",
+      "_id": "processing_logs_14_1793609452"
+    },
+    {
+      "document_id": "DOC-135720",
+      "filename": "isolated.png",
+      "owner_id": "c8e7c62c1beb4e82b5186c11bcb13d04",
+      "organization_id": null,
+      "total_duration_ms": 360.2,
+      "status": "Verified",
+      "timestamp": "2026-11-02T14:20:54.497372",
+      "_id": "processing_logs_15_1793609454"
+    },
+    {
+      "document_id": "DOC-990D05",
+      "filename": "isolated.png",
+      "owner_id": "f0c249536bcc4519a5bdd2951de191f7",
+      "organization_id": null,
+      "total_duration_ms": 374.7,
+      "status": "Verified",
+      "timestamp": "2026-11-02T14:20:57.505673",
+      "_id": "processing_logs_16_1793609457"
     }
   ]
 }

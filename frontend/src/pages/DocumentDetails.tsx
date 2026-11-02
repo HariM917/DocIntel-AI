@@ -127,15 +127,20 @@ export const DocumentDetails: React.FC = () => {
             <Bot className="w-3.5 h-3.5" />
             <span>Chat With Document</span>
           </Link>
-          <a
-            href={documentApi.getDownloadUrl(doc.document_id)}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            onClick={async () => {
+              try {
+                await documentApi.download(doc.document_id, doc.filename);
+              } catch (err) {
+                console.error('Error downloading document:', err);
+                showToast('Failed to download document.', 'error');
+              }
+            }}
             className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Download Original</span>
-          </a>
+          </button>
         </div>
       </div>
 

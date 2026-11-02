@@ -23,8 +23,15 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE=docintel
-      - JWT_SECRET=docintel-super-secret-jwt-key-production-ready-2025
-      - FRONTEND_URL=http://localhost:5173
+      - ENVIRONMENT=${ENVIRONMENT:-staging}
+      - ALLOW_LOCAL_FALLBACK=${ALLOW_LOCAL_FALLBACK:-false}
+      # Never hard-code secrets. Provide JWT_SECRET_KEY via the shell/.env at deploy time.
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set to a strong random value}
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173}
+      - BOOTSTRAP_ADMIN_EMAIL=${BOOTSTRAP_ADMIN_EMAIL:-}
+      - BOOTSTRAP_ADMIN_PASSWORD=${BOOTSTRAP_ADMIN_PASSWORD:-}
     volumes:
       - ./data:/app/../data
       - ./backend/uploads:/app/uploads

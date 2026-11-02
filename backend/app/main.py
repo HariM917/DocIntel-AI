@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.database import db
-from app.api.auth import router as auth_router
+from app.api.auth import router as auth_router, ensure_bootstrap_admin
 from app.api.documents import router as documents_router
 from app.api.dashboard import router as dashboard_router
 from app.api.search import router as search_router
@@ -27,6 +27,7 @@ async def lifespan(app: FastAPI):
     logger.info("Starting DocIntel AI backend...")
     await db.connect()
     await ensure_default_rules()
+    await ensure_bootstrap_admin()
     yield
     # Shutdown
     logger.info("Shutting down DocIntel AI backend...")
@@ -44,13 +45,18 @@ app = FastAPI(
 )
 
 # CORS Middleware
-origins = list(set(settings.CORS_ORIGINS + [settings.FRONTEND_URL]))
+# Only explicitly configured origins are permitted; the wildcard is never
+# combined with credentials (an invalid and insecure combination).
+_allowed_origins = sorted({o.strip() for o in (settings.CORS_ORIGINS + [settings.FRONTEND_URL]) if o and o.strip()})
+if "*" in _allowed_origins:
+    # Never allow credentialed wildcard origins; drop the wildcard.
+    _allowed_origins = [o for o in _allowed_origins if o != "*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Hackathon & local dev accessibility
+    allow_origins=_allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 # Global Exception Handler to ensure clean user-facing error messages without stack trace leak
@@ -63,15 +69,24 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# Health Check
+# Liveness probe: process is up. Intentionally minimal and never leaks
+# infrastructure details (no database host, mode, or credentials).
 @app.get("/api/health", tags=["Health"])
 async def health_check():
     return {
         "status": "healthy",
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION,
-        "database": "connected" if db.is_connected else "disconnected",
-        "database_mode": "fallback_store" if db.fallback_mode else "mongodb_native",
+    }
+
+
+# Readiness probe: reports whether dependencies required to serve requests are
+# actually available, without exposing backend internals.
+@app.get("/api/ready", tags=["Health"])
+async def readiness_check():
+    return {
+        "ready": bool(db.is_connected),
+        "status": "ready" if db.is_connected else "unavailable",
     }
 
 

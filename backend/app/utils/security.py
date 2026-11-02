@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional, Union, Any
+from typing import Optional
 from jose import JWTError, jwt
 import bcrypt
 
@@ -9,6 +9,9 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.config import settings
 
 security_scheme = HTTPBearer(auto_error=False)
+
+# Account statuses that are allowed to access protected resources.
+ACTIVE_STATUSES = {"active"}
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -31,57 +34,111 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.JWT_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt
 
 
 def decode_access_token(token: str) -> Optional[dict]:
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         return payload
     except JWTError:
         return None
 
 
-async def get_current_user_optional(
-    auth: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme)
-) -> Optional[dict]:
-    if not auth:
-        return None
-    token = auth.credentials
-    payload = decode_access_token(token)
-    if not payload or "sub" not in payload:
-        return None
+def get_user_id(user: dict) -> str:
+    """Returns the stable identifier for a user document.
+
+    Prefers the explicit immutable ``user_id`` field, falling back to legacy
+    identifiers for accounts created before this field was introduced.
+    """
+    return str(user.get("user_id") or user.get("_id") or user.get("id") or user.get("email"))
+
+
+def is_user_active(user: dict) -> bool:
+    """Determines whether an account is allowed to access protected resources."""
+    raw_status = user.get("status")
+    if raw_status is None:
+        # Legacy accounts: fall back to the boolean is_active flag.
+        return user.get("is_active", True) is not False
+    return str(raw_status).strip().lower() in ACTIVE_STATUSES
+
+
+def authorization_filter(user: dict) -> dict:
+    """Builds a MongoDB filter restricting documents to those owned by ``user``.
+
+    Matches the stable ``owner_id`` when present, and falls back to the legacy
+    ``owner`` (email) field so that documents created before owner_id existed
+    remain reachable by their owner without a data migration.
+    """
+    clauses = [{"owner": user.get("email")}]
+    user_id = get_user_id(user)
+    if user_id:
+        clauses.append({"owner_id": user_id})
+    return {"$or": clauses}
+
+
+async def _load_user_by_subject(subject: str) -> Optional[dict]:
     from app.database import db
-    user = await db.users.find_one({"email": payload["sub"]})
-    return user
+    return await db.users.find_one({"email": subject})
 
 
 async def get_current_user(
     auth: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme)
 ) -> dict:
+    """Authenticates the caller and verifies the account is active."""
     if not auth:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication credentials were not provided",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = auth.credentials
-    payload = decode_access_token(token)
+    payload = decode_access_token(auth.credentials)
     if not payload or "sub" not in payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    from app.database import db
-    user = await db.users.find_one({"email": payload["sub"]})
+    user = await _load_user_by_subject(payload["sub"])
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User no longer exists",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if not is_user_active(user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is not active",
+        )
     return user
+
+
+async def get_current_active_user(current_user: dict = Depends(get_current_user)) -> dict:
+    """FastAPI dependency for protected routes that require an active account."""
+    if not is_user_active(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is not active",
+        )
+    return current_user
+
+
+async def get_authorized_document(document_id: str, current_user: dict) -> dict:
+    """Fetches a document only if the authenticated user is authorized to access it.
+
+    Raises 404 (never leaking existence of another user's document) when the
+    document does not exist or is not owned by the caller.
+    """
+    from app.database import db
+    query = {"$and": [{"document_id": document_id}, authorization_filter(current_user)]}
+    doc = await db.documents.find_one(query)
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document '{document_id}' not found",
+        )
+    return doc

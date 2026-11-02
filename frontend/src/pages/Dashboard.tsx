@@ -47,6 +47,15 @@ export const Dashboard: React.FC = () => {
     fetchStats();
   };
 
+  const handleDownload = async (documentId: string, filename: string) => {
+    try {
+      await documentApi.download(documentId, filename);
+    } catch (err) {
+      console.error('Error downloading document:', err);
+      showToast('Failed to download document.', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-24">
@@ -236,15 +245,13 @@ export const Dashboard: React.FC = () => {
                         >
                           <Eye className="w-4 h-4" />
                         </Link>
-                        <a
-                          href={documentApi.getDownloadUrl(doc.document_id)}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
+                          onClick={() => handleDownload(doc.document_id, doc.filename)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
                           title="Download Original"
                         >
                           <Download className="w-4 h-4" />
-                        </a>
+                        </button>
                       </div>
                     </td>
                   </tr>

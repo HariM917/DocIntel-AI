@@ -2,8 +2,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 
-def test_dashboard_stats(client: TestClient):
-    res = client.get("/api/dashboard/stats")
+def test_dashboard_stats(client: TestClient, auth_headers):
+    headers, _ = auth_headers("dashboard")
+    res = client.get("/api/dashboard/stats", headers=headers)
     assert res.status_code == 200
     data = res.json()
     assert "total_processed" in data
@@ -14,8 +15,14 @@ def test_dashboard_stats(client: TestClient):
     assert "recent_documents" in data
 
 
-def test_search_documents(client: TestClient):
-    res = client.get("/api/search?q=Invoice")
+def test_dashboard_requires_authentication(client: TestClient):
+    res = client.get("/api/dashboard/stats")
+    assert res.status_code == 401
+
+
+def test_search_documents(client: TestClient, auth_headers):
+    headers, _ = auth_headers("searcher")
+    res = client.get("/api/search?q=Invoice", headers=headers)
     assert res.status_code == 200
     data = res.json()
     assert "query" in data
@@ -23,9 +30,15 @@ def test_search_documents(client: TestClient):
     assert "results" in data
 
 
-def test_security_rules_flow(client: TestClient):
+def test_search_requires_authentication(client: TestClient):
+    res = client.get("/api/search?q=Invoice")
+    assert res.status_code == 401
+
+
+def test_security_rules_flow(client: TestClient, auth_headers):
+    headers, _ = auth_headers("rules")
     # 1. Get rules
-    rules_res = client.get("/api/security/rules")
+    rules_res = client.get("/api/security/rules", headers=headers)
     assert rules_res.status_code == 200
     rules = rules_res.json()
     assert len(rules) >= 6
@@ -37,6 +50,7 @@ def test_security_rules_flow(client: TestClient):
 
     put_res = client.put(
         f"/api/security/rules/{rule_id}",
+        headers=headers,
         json={"enabled": new_state},
     )
     assert put_res.status_code == 200
@@ -45,14 +59,22 @@ def test_security_rules_flow(client: TestClient):
     # Restore state
     client.put(
         f"/api/security/rules/{rule_id}",
+        headers=headers,
         json={"enabled": first_rule["enabled"]},
     )
 
 
-def test_chat_assistant(client: TestClient):
+def test_security_rules_require_authentication(client: TestClient):
+    res = client.get("/api/security/rules")
+    assert res.status_code == 401
+
+
+def test_chat_assistant(client: TestClient, auth_headers):
+    headers, _ = auth_headers("chatter")
     # 1. General query
     res = client.post(
         "/api/chat",
+        headers=headers,
         json={"message": "What is the invoice amount?"},
     )
     assert res.status_code == 200
@@ -64,6 +86,12 @@ def test_chat_assistant(client: TestClient):
     # 2. Empty query validation
     bad_res = client.post(
         "/api/chat",
+        headers=headers,
         json={"message": "   "},
     )
     assert bad_res.status_code == 400
+
+
+def test_chat_requires_authentication(client: TestClient):
+    res = client.post("/api/chat", json={"message": "hello"})
+    assert res.status_code == 401

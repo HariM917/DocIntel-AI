@@ -9,8 +9,8 @@ sys.path.insert(0, str(BASE_DIR / "backend"))
 
 from app.config import settings
 from app.database import db
-from app.utils.security import get_password_hash
 from app.api.security import DEFAULT_RULES
+from app.api.auth import ensure_bootstrap_admin
 from app.services.document_service import document_service
 
 
@@ -25,21 +25,17 @@ async def seed():
     print("Connecting to database...")
     await db.connect()
 
-    # 1. Seed Admin User
-    admin_email = "admin@docintel.ai"
-    existing_user = await db.users.find_one({"email": admin_email})
-    if not existing_user:
-        await db.users.insert_one({
-            "email": admin_email,
-            "full_name": "DocIntel Administrator",
-            "password_hash": get_password_hash("Admin@12345"),
-            "role": "admin",
-            "created_at": "2025-01-01T00:00:00",
-            "updated_at": "2025-01-01T00:00:00",
-        })
-        print(f"Created default admin user: {admin_email} / Admin@12345")
+    # 1. Provision the administrator via the single, environment-controlled
+    #    bootstrap path. Credentials are never hard-coded or logged.
+    await ensure_bootstrap_admin()
+    admin_email = (settings.BOOTSTRAP_ADMIN_EMAIL or "").strip()
+    admin_user = await db.users.find_one({"email": admin_email}) if admin_email else None
+    if admin_user:
+        print("Bootstrap administrator ensured from environment configuration.")
+        owner_id = admin_user.get("user_id")
     else:
-        print(f"Admin user {admin_email} already exists.")
+        print("No BOOTSTRAP_ADMIN_EMAIL configured; skipping administrator provisioning.")
+        owner_id = None
 
     # 2. Seed Default Security Rules
     for rule in DEFAULT_RULES:
@@ -55,7 +51,7 @@ async def seed():
 
     # 3. Process Sample Documents if none are processed yet
     doc_count = await db.documents.count_documents({})
-    if doc_count == 0:
+    if doc_count == 0 and admin_email:
         sample_files = [
             BASE_DIR / "data" / "sample_documents" / "sample_invoice.pdf",
             BASE_DIR / "data" / "sample_documents" / "sample_contract.pdf",
@@ -68,7 +64,11 @@ async def seed():
                 print(f"\nProcessing sample document: {s_file.name}...")
                 dummy = DummyUploadFile(s_file)
                 try:
-                    result = await document_service.process_document_file(dummy, current_user_email=admin_email)
+                    result = await document_service.process_document_file(
+                        dummy,
+                        current_user_email=admin_email,
+                        owner_id=owner_id,
+                    )
                     print(f"Processed {result['document_id']}: {result['document_type']} - Status: {result['status']} (Conf: {result['confidence']:.2f})")
                 finally:
                     dummy.file.close()
